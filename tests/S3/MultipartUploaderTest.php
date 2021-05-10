@@ -3,7 +3,9 @@ namespace Aws\Test\S3;
 
 use Aws\S3\MultipartUploader;
 use Aws\Result;
+use Aws\S3\S3Client;
 use Aws\Test\UsesServiceTrait;
+use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7;
 use Psr\Http\Message\StreamInterface;
 use PHPUnit\Framework\TestCase;
@@ -43,14 +45,18 @@ class MultipartUploaderTest extends TestCase
         ]);
 
         if ($error) {
-            $this->setExpectedException($error);
+            if (method_exists($this, 'expectException')) {
+                $this->expectException($error);
+            } else {
+                $this->setExpectedException($error);
+            }
         }
 
         $uploader = new MultipartUploader($client, $source, $uploadOptions);
         $result = $uploader->upload();
 
         $this->assertTrue($uploader->getState()->isCompleted());
-        $this->assertEquals($url, $result['ObjectURL']);
+        $this->assertSame($url, $result['ObjectURL']);
     }
 
     public function getTestCases()
@@ -107,8 +113,8 @@ class MultipartUploaderTest extends TestCase
         $result = $uploader->upload();
 
         $this->assertTrue($uploader->getState()->isCompleted());
-        $this->assertEquals(4 * self::MB, $uploader->getState()->getPartSize());
-        $this->assertEquals($url, $result['ObjectURL']);
+        $this->assertSame(4 * self::MB, $uploader->getState()->getPartSize());
+        $this->assertSame($url, $result['ObjectURL']);
     }
 
     public function testCanUseCaseInsensitiveConfigKeys()
@@ -163,14 +169,14 @@ class MultipartUploaderTest extends TestCase
                 'ContentLength' => $size
             ],
             'before_initiate' => function($command) {
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             },
             'before_upload'   => function($command) use ($size) {
                 $this->assertLessThan($size, $command['ContentLength']);
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             },
             'before_complete' => function($command) {
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             }
         ];
         $url = 'http://foo.s3.amazonaws.com/bar';
@@ -187,7 +193,7 @@ class MultipartUploaderTest extends TestCase
         $result = $uploader->upload();
 
         $this->assertTrue($uploader->getState()->isCompleted());
-        $this->assertEquals($url, $result['ObjectURL']);
+        $this->assertSame($url, $result['ObjectURL']);
     }
 
     public function getContentTypeSettingTests()
@@ -256,6 +262,47 @@ class MultipartUploaderTest extends TestCase
         $result = $uploader->upload();
 
         $this->assertTrue($uploader->getState()->isCompleted());
-        $this->assertEquals($url, $result['ObjectURL']);
+        $this->assertSame($url, $result['ObjectURL']);
+    }
+
+    /**
+     * @expectedException \Aws\S3\Exception\S3MultipartUploadException
+     * @expectedExceptionMessage An exception occurred while uploading parts to a multipart upload
+     */
+    public function testAppliesAmbiguousSuccessParsing()
+    {
+        $counter = 0;
+
+        $httpHandler = function ($request, array $options) use (&$counter) {
+            if ($counter < 1) {
+                $body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><OperationNameResponse><UploadId>baz</UploadId></OperationNameResponse>";
+            } else {
+                $body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n\n";
+            }
+            $counter++;
+
+            return Promise\promise_for(
+                new Psr7\Response(200, [], $body)
+            );
+        };
+
+        $s3 = new S3Client([
+            'version'     => 'latest',
+            'region'      => 'us-east-1',
+            'http_handler' => $httpHandler
+        ]);
+
+        $data = str_repeat('.', 12 * 1048576);
+        $source = Psr7\stream_for($data);
+
+        $uploader = new MultipartUploader(
+            $s3,
+            $source,
+            [
+                'bucket' => 'test-bucket',
+                'key' => 'test-key'
+            ]
+        );
+        $uploader->upload();
     }
 }

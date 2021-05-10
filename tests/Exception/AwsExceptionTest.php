@@ -1,7 +1,12 @@
 <?php
-namespace Aws\Test;
+namespace Aws\Test\Exception;
 
+use Aws\Test\UsesServiceTrait;
+use Aws\Api\ApiProvider;
+use Aws\Api\Service;
+use Aws\Api\StructureShape;
 use Aws\Command;
+use Aws\Ec2\Ec2Client;
 use Aws\Exception\AwsException;
 use Aws\Result;
 use GuzzleHttp\Psr7\Request;
@@ -25,9 +30,9 @@ class AwsExceptionTest extends TestCase
 
         $command = new Command('foo');
         $e = new AwsException('Foo', $command, $ctx);
-        $this->assertEquals('10', $e->getAwsRequestId());
-        $this->assertEquals('mytype', $e->getAwsErrorType());
-        $this->assertEquals('mycode', $e->getAwsErrorCode());
+        $this->assertSame('10', $e->getAwsRequestId());
+        $this->assertSame('mytype', $e->getAwsErrorType());
+        $this->assertSame('mycode', $e->getAwsErrorCode());
         $this->assertSame($command, $e->getCommand());
         $this->assertNull($e->getResult());
     }
@@ -37,7 +42,16 @@ class AwsExceptionTest extends TestCase
         $ctx = ['response' => new Response(400)];
         $command = new Command('foo');
         $e = new AwsException('Foo', $command, $ctx);
-        $this->assertEquals(400, $e->getStatusCode());
+        $this->assertSame(400, $e->getStatusCode());
+    }
+
+    public function testSetsMaxRetriesExceeded()
+    {
+        $command = new Command('foo');
+        $e = new AwsException('Foo', $command);
+        $this->assertFalse($e->isMaxRetriesExceeded());
+        $e->setMaxRetriesExceeded();
+        $this->assertTrue($e->isMaxRetriesExceeded());
     }
 
     public function testProvidesResult()
@@ -106,5 +120,65 @@ class AwsExceptionTest extends TestCase
             "exception 'Aws\\Exception\\AwsException' with message 'Foo'",
             $e->__toString()
         );
+    }
+
+    public function testHasData()
+    {
+        $e = new AwsException(
+            'foo-message',
+            new Command('bar'),
+            ['body' => ['a' => 'b', 'c' => 'd']]
+        );
+        $this->assertSame('b', $e['a']);
+        $this->assertSame('d', $e['c']);
+        $this->assertSame('d', $e->get('c'));
+        $this->assertTrue($e->hasKey('c'));
+        $this->assertFalse($e->hasKey('f'));
+        $this->assertSame('b', $e->search('a'));
+    }
+
+    public function testProvidesErrorShape()
+    {
+        $command = new Command('foo');
+        $response = new Response();
+
+        $provider = ApiProvider::filesystem(__DIR__ . '/../fixtures/aws_exception_test');
+        $definition = $provider('api', 'ec2', 'latest');
+        $service = new Service($definition, $provider);
+        $shapes = $service->getErrorShapes();
+        $errorShape = $shapes[0];
+
+        $e = new AwsException(
+            'Foo',
+            $command,
+            [
+                'response' => $response,
+                'error_shape' => $errorShape
+            ]
+        );
+        $this->assertSame($errorShape->toArray(), $e->getAwsErrorShape()->toArray());
+    }
+
+    public function testCanIndirectlyModifyLikeAnArray()
+    {
+        $e = new AwsException(
+            'foo-message',
+            new Command('bar'),
+            [
+                'body' => [
+                    'foo' => ['baz' => 'bar'],
+                    'qux' => 0
+                ]
+            ]
+        );
+        $this->assertNull($e['missing']);
+        $this->assertEquals(['baz' => 'bar'], $e['foo']);
+        $e['foo']['lorem'] = 'ipsum';
+        $this->assertEquals(['baz' => 'bar', 'lorem' => 'ipsum'], $e['foo']);
+        unset($e['foo']['baz']);
+        $this->assertEquals(['lorem' => 'ipsum'], $e['foo']);
+        $q = $e['qux'];
+        $q = 100;
+        $this->assertSame(0, $e['qux']);
     }
 }

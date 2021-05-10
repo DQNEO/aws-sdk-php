@@ -30,6 +30,32 @@
         {"shape":"OperationNotPermittedException"}
       ]
     },
+    "BatchAssociateUserStack":{
+      "name":"BatchAssociateUserStack",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchAssociateUserStackRequest"},
+      "output":{"shape":"BatchAssociateUserStackResult"},
+      "errors":[
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ]
+    },
+    "BatchDisassociateUserStack":{
+      "name":"BatchDisassociateUserStack",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchDisassociateUserStackRequest"},
+      "output":{"shape":"BatchDisassociateUserStackResult"},
+      "errors":[
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ]
+    },
     "CopyImage":{
       "name":"CopyImage",
       "http":{
@@ -56,9 +82,12 @@
       "input":{"shape":"CreateDirectoryConfigRequest"},
       "output":{"shape":"CreateDirectoryConfigResult"},
       "errors":[
+        {"shape":"ResourceNotFoundException"},
         {"shape":"ResourceAlreadyExistsException"},
         {"shape":"LimitExceededException"},
-        {"shape":"InvalidAccountStatusException"}
+        {"shape":"InvalidAccountStatusException"},
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"InvalidRoleException"}
       ]
     },
     "CreateFleet":{
@@ -74,6 +103,7 @@
         {"shape":"ResourceNotAvailableException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"LimitExceededException"},
+        {"shape":"RequestLimitExceededException"},
         {"shape":"InvalidAccountStatusException"},
         {"shape":"InvalidRoleException"},
         {"shape":"ConcurrentModificationException"},
@@ -92,6 +122,7 @@
       "output":{"shape":"CreateImageBuilderResult"},
       "errors":[
         {"shape":"LimitExceededException"},
+        {"shape":"RequestLimitExceededException"},
         {"shape":"InvalidAccountStatusException"},
         {"shape":"ResourceAlreadyExistsException"},
         {"shape":"ResourceNotAvailableException"},
@@ -147,6 +178,54 @@
         {"shape":"ResourceNotAvailableException"},
         {"shape":"OperationNotPermittedException"},
         {"shape":"InvalidParameterCombinationException"}
+      ]
+    },
+    "CreateUpdatedImage":{
+      "name":"CreateUpdatedImage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateUpdatedImageRequest"},
+      "output":{"shape":"CreateUpdatedImageResult"},
+      "errors":[
+        {"shape":"LimitExceededException"},
+        {"shape":"InvalidAccountStatusException"},
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"IncompatibleImageException"}
+      ]
+    },
+    "CreateUsageReportSubscription":{
+      "name":"CreateUsageReportSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateUsageReportSubscriptionRequest"},
+      "output":{"shape":"CreateUsageReportSubscriptionResult"},
+      "errors":[
+        {"shape":"InvalidRoleException"},
+        {"shape":"InvalidAccountStatusException"},
+        {"shape":"LimitExceededException"}
+      ]
+    },
+    "CreateUser":{
+      "name":"CreateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateUserRequest"},
+      "output":{"shape":"CreateUserResult"},
+      "errors":[
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"InvalidAccountStatusException"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"OperationNotPermittedException"}
       ]
     },
     "DeleteDirectoryConfig":{
@@ -230,6 +309,31 @@
         {"shape":"ResourceInUseException"},
         {"shape":"ResourceNotFoundException"},
         {"shape":"ConcurrentModificationException"}
+      ]
+    },
+    "DeleteUsageReportSubscription":{
+      "name":"DeleteUsageReportSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteUsageReportSubscriptionRequest"},
+      "output":{"shape":"DeleteUsageReportSubscriptionResult"},
+      "errors":[
+        {"shape":"InvalidAccountStatusException"},
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
+    "DeleteUser":{
+      "name":"DeleteUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteUserRequest"},
+      "output":{"shape":"DeleteUserResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
       ]
     },
     "DescribeDirectoryConfigs":{
@@ -317,6 +421,57 @@
         {"shape":"ResourceNotFoundException"}
       ]
     },
+    "DescribeUsageReportSubscriptions":{
+      "name":"DescribeUsageReportSubscriptions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeUsageReportSubscriptionsRequest"},
+      "output":{"shape":"DescribeUsageReportSubscriptionsResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidAccountStatusException"}
+      ]
+    },
+    "DescribeUserStackAssociations":{
+      "name":"DescribeUserStackAssociations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeUserStackAssociationsRequest"},
+      "output":{"shape":"DescribeUserStackAssociationsResult"},
+      "errors":[
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"OperationNotPermittedException"}
+      ]
+    },
+    "DescribeUsers":{
+      "name":"DescribeUsers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeUsersRequest"},
+      "output":{"shape":"DescribeUsersResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ]
+    },
+    "DisableUser":{
+      "name":"DisableUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DisableUserRequest"},
+      "output":{"shape":"DisableUserResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
     "DisassociateFleet":{
       "name":"DisassociateFleet",
       "http":{
@@ -328,7 +483,21 @@
       "errors":[
         {"shape":"ResourceInUseException"},
         {"shape":"ResourceNotFoundException"},
-        {"shape":"ConcurrentModificationException"}
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"OperationNotPermittedException"}
+      ]
+    },
+    "EnableUser":{
+      "name":"EnableUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"EnableUserRequest"},
+      "output":{"shape":"EnableUserResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidAccountStatusException"}
       ]
     },
     "ExpireSession":{
@@ -382,8 +551,11 @@
         {"shape":"ResourceNotFoundException"},
         {"shape":"OperationNotPermittedException"},
         {"shape":"LimitExceededException"},
+        {"shape":"RequestLimitExceededException"},
         {"shape":"InvalidAccountStatusException"},
-        {"shape":"ConcurrentModificationException"}
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"ResourceNotAvailableException"},
+        {"shape":"InvalidRoleException"}
       ]
     },
     "StartImageBuilder":{
@@ -466,7 +638,9 @@
       "errors":[
         {"shape":"ResourceInUseException"},
         {"shape":"ResourceNotFoundException"},
-        {"shape":"ConcurrentModificationException"}
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"InvalidRoleException"}
       ]
     },
     "UpdateFleet":{
@@ -480,6 +654,7 @@
       "errors":[
         {"shape":"ResourceInUseException"},
         {"shape":"LimitExceededException"},
+        {"shape":"RequestLimitExceededException"},
         {"shape":"InvalidAccountStatusException"},
         {"shape":"InvalidRoleException"},
         {"shape":"ResourceNotFoundException"},
@@ -520,11 +695,30 @@
         {"shape":"LimitExceededException"},
         {"shape":"InvalidAccountStatusException"},
         {"shape":"IncompatibleImageException"},
-        {"shape":"OperationNotPermittedException"}
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"ConcurrentModificationException"}
       ]
     }
   },
   "shapes":{
+    "AccessEndpoint":{
+      "type":"structure",
+      "required":["EndpointType"],
+      "members":{
+        "EndpointType":{"shape":"AccessEndpointType"},
+        "VpceId":{"shape":"String"}
+      }
+    },
+    "AccessEndpointList":{
+      "type":"list",
+      "member":{"shape":"AccessEndpoint"},
+      "max":4,
+      "min":1
+    },
+    "AccessEndpointType":{
+      "type":"string",
+      "enum":["STREAMING"]
+    },
     "AccountName":{
       "type":"string",
       "min":1,
@@ -543,7 +737,9 @@
         "CLIPBOARD_COPY_TO_LOCAL_DEVICE",
         "FILE_UPLOAD",
         "FILE_DOWNLOAD",
-        "PRINTING_TO_LOCAL_DEVICE"
+        "PRINTING_TO_LOCAL_DEVICE",
+        "DOMAIN_PASSWORD_SIGNIN",
+        "DOMAIN_SMART_CARD_SIGNIN"
       ]
     },
     "Application":{
@@ -558,6 +754,22 @@
         "Metadata":{"shape":"Metadata"}
       }
     },
+    "ApplicationSettings":{
+      "type":"structure",
+      "required":["Enabled"],
+      "members":{
+        "Enabled":{"shape":"Boolean"},
+        "SettingsGroup":{"shape":"SettingsGroup"}
+      }
+    },
+    "ApplicationSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "Enabled":{"shape":"Boolean"},
+        "SettingsGroup":{"shape":"SettingsGroup"},
+        "S3BucketName":{"shape":"String"}
+      }
+    },
     "Applications":{
       "type":"list",
       "member":{"shape":"Application"}
@@ -569,7 +781,7 @@
     },
     "Arn":{
       "type":"string",
-      "pattern":"^arn:aws:[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,1023}$"
+      "pattern":"^arn:aws(?:\\-cn|\\-iso\\-b|\\-iso|\\-us\\-gov)?:[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_/+=,@.\\\\-]{0,1023}$"
     },
     "ArnList":{
       "type":"list",
@@ -608,6 +820,32 @@
       "member":{"shape":"AwsAccountId"},
       "max":5,
       "min":1
+    },
+    "BatchAssociateUserStackRequest":{
+      "type":"structure",
+      "required":["UserStackAssociations"],
+      "members":{
+        "UserStackAssociations":{"shape":"UserStackAssociationList"}
+      }
+    },
+    "BatchAssociateUserStackResult":{
+      "type":"structure",
+      "members":{
+        "errors":{"shape":"UserStackAssociationErrorList"}
+      }
+    },
+    "BatchDisassociateUserStackRequest":{
+      "type":"structure",
+      "required":["UserStackAssociations"],
+      "members":{
+        "UserStackAssociations":{"shape":"UserStackAssociationList"}
+      }
+    },
+    "BatchDisassociateUserStackResult":{
+      "type":"structure",
+      "members":{
+        "errors":{"shape":"UserStackAssociationErrorList"}
+      }
     },
     "Boolean":{"type":"boolean"},
     "BooleanObject":{"type":"boolean"},
@@ -659,8 +897,7 @@
       "type":"structure",
       "required":[
         "DirectoryName",
-        "OrganizationalUnitDistinguishedNames",
-        "ServiceAccountCredentials"
+        "OrganizationalUnitDistinguishedNames"
       ],
       "members":{
         "DirectoryName":{"shape":"DirectoryName"},
@@ -694,7 +931,11 @@
         "Description":{"shape":"Description"},
         "DisplayName":{"shape":"DisplayName"},
         "EnableDefaultInternetAccess":{"shape":"BooleanObject"},
-        "DomainJoinInfo":{"shape":"DomainJoinInfo"}
+        "DomainJoinInfo":{"shape":"DomainJoinInfo"},
+        "Tags":{"shape":"Tags"},
+        "IdleDisconnectTimeoutInSeconds":{"shape":"Integer"},
+        "IamRoleArn":{"shape":"Arn"},
+        "StreamView":{"shape":"StreamView"}
       }
     },
     "CreateFleetResult":{
@@ -717,9 +958,12 @@
         "Description":{"shape":"Description"},
         "DisplayName":{"shape":"DisplayName"},
         "VpcConfig":{"shape":"VpcConfig"},
+        "IamRoleArn":{"shape":"Arn"},
         "EnableDefaultInternetAccess":{"shape":"BooleanObject"},
         "DomainJoinInfo":{"shape":"DomainJoinInfo"},
-        "AppstreamAgentVersion":{"shape":"AppstreamAgentVersion"}
+        "AppstreamAgentVersion":{"shape":"AppstreamAgentVersion"},
+        "Tags":{"shape":"Tags"},
+        "AccessEndpoints":{"shape":"AccessEndpointList"}
       }
     },
     "CreateImageBuilderResult":{
@@ -753,7 +997,11 @@
         "StorageConnectors":{"shape":"StorageConnectorList"},
         "RedirectURL":{"shape":"RedirectURL"},
         "FeedbackURL":{"shape":"FeedbackURL"},
-        "UserSettings":{"shape":"UserSettingList"}
+        "UserSettings":{"shape":"UserSettingList"},
+        "ApplicationSettings":{"shape":"ApplicationSettings"},
+        "Tags":{"shape":"Tags"},
+        "AccessEndpoints":{"shape":"AccessEndpointList"},
+        "EmbedHostDomains":{"shape":"EmbedHostDomains"}
       }
     },
     "CreateStackResult":{
@@ -783,6 +1031,59 @@
       "members":{
         "StreamingURL":{"shape":"String"},
         "Expires":{"shape":"Timestamp"}
+      }
+    },
+    "CreateUpdatedImageRequest":{
+      "type":"structure",
+      "required":[
+        "existingImageName",
+        "newImageName"
+      ],
+      "members":{
+        "existingImageName":{"shape":"Name"},
+        "newImageName":{"shape":"Name"},
+        "newImageDescription":{"shape":"Description"},
+        "newImageDisplayName":{"shape":"DisplayName"},
+        "newImageTags":{"shape":"Tags"},
+        "dryRun":{"shape":"Boolean"}
+      }
+    },
+    "CreateUpdatedImageResult":{
+      "type":"structure",
+      "members":{
+        "image":{"shape":"Image"},
+        "canUpdateImage":{"shape":"Boolean"}
+      }
+    },
+    "CreateUsageReportSubscriptionRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "CreateUsageReportSubscriptionResult":{
+      "type":"structure",
+      "members":{
+        "S3BucketName":{"shape":"String"},
+        "Schedule":{"shape":"UsageReportSchedule"}
+      }
+    },
+    "CreateUserRequest":{
+      "type":"structure",
+      "required":[
+        "UserName",
+        "AuthenticationType"
+      ],
+      "members":{
+        "UserName":{"shape":"Username"},
+        "MessageAction":{"shape":"MessageAction"},
+        "FirstName":{"shape":"UserAttributeValue"},
+        "LastName":{"shape":"UserAttributeValue"},
+        "AuthenticationType":{"shape":"AuthenticationType"}
+      }
+    },
+    "CreateUserResult":{
+      "type":"structure",
+      "members":{
       }
     },
     "DeleteDirectoryConfigRequest":{
@@ -859,6 +1160,32 @@
       }
     },
     "DeleteStackResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteUsageReportSubscriptionRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteUsageReportSubscriptionResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteUserRequest":{
+      "type":"structure",
+      "required":[
+        "UserName",
+        "AuthenticationType"
+      ],
+      "members":{
+        "UserName":{"shape":"Username"},
+        "AuthenticationType":{"shape":"AuthenticationType"}
+      }
+    },
+    "DeleteUserResult":{
       "type":"structure",
       "members":{
       }
@@ -984,6 +1311,53 @@
         "NextToken":{"shape":"String"}
       }
     },
+    "DescribeUsageReportSubscriptionsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{"shape":"Integer"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeUsageReportSubscriptionsResult":{
+      "type":"structure",
+      "members":{
+        "UsageReportSubscriptions":{"shape":"UsageReportSubscriptionList"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeUserStackAssociationsRequest":{
+      "type":"structure",
+      "members":{
+        "StackName":{"shape":"String"},
+        "UserName":{"shape":"Username"},
+        "AuthenticationType":{"shape":"AuthenticationType"},
+        "MaxResults":{"shape":"MaxResults"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeUserStackAssociationsResult":{
+      "type":"structure",
+      "members":{
+        "UserStackAssociations":{"shape":"UserStackAssociationList"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeUsersRequest":{
+      "type":"structure",
+      "required":["AuthenticationType"],
+      "members":{
+        "AuthenticationType":{"shape":"AuthenticationType"},
+        "MaxResults":{"shape":"Integer"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeUsersResult":{
+      "type":"structure",
+      "members":{
+        "Users":{"shape":"UserList"},
+        "NextToken":{"shape":"String"}
+      }
+    },
     "Description":{
       "type":"string",
       "max":256
@@ -1007,6 +1381,22 @@
       "type":"list",
       "member":{"shape":"DirectoryName"}
     },
+    "DisableUserRequest":{
+      "type":"structure",
+      "required":[
+        "UserName",
+        "AuthenticationType"
+      ],
+      "members":{
+        "UserName":{"shape":"Username"},
+        "AuthenticationType":{"shape":"AuthenticationType"}
+      }
+    },
+    "DisableUserResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "DisassociateFleetRequest":{
       "type":"structure",
       "required":[
@@ -1029,7 +1419,8 @@
     },
     "Domain":{
       "type":"string",
-      "max":64
+      "max":64,
+      "min":1
     },
     "DomainJoinInfo":{
       "type":"structure",
@@ -1041,7 +1432,34 @@
     "DomainList":{
       "type":"list",
       "member":{"shape":"Domain"},
-      "max":10
+      "max":50
+    },
+    "EmbedHostDomain":{
+      "type":"string",
+      "max":128,
+      "pattern":"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]"
+    },
+    "EmbedHostDomains":{
+      "type":"list",
+      "member":{"shape":"EmbedHostDomain"},
+      "max":20,
+      "min":1
+    },
+    "EnableUserRequest":{
+      "type":"structure",
+      "required":[
+        "UserName",
+        "AuthenticationType"
+      ],
+      "members":{
+        "UserName":{"shape":"Username"},
+        "AuthenticationType":{"shape":"AuthenticationType"}
+      }
+    },
+    "EnableUserResult":{
+      "type":"structure",
+      "members":{
+      }
     },
     "ErrorMessage":{"type":"string"},
     "ExpireSessionRequest":{
@@ -1086,7 +1504,10 @@
         "CreatedTime":{"shape":"Timestamp"},
         "FleetErrors":{"shape":"FleetErrors"},
         "EnableDefaultInternetAccess":{"shape":"BooleanObject"},
-        "DomainJoinInfo":{"shape":"DomainJoinInfo"}
+        "DomainJoinInfo":{"shape":"DomainJoinInfo"},
+        "IdleDisconnectTimeoutInSeconds":{"shape":"Integer"},
+        "IamRoleArn":{"shape":"Arn"},
+        "StreamView":{"shape":"StreamView"}
       }
     },
     "FleetAttribute":{
@@ -1094,7 +1515,8 @@
       "enum":[
         "VPC_CONFIGURATION",
         "VPC_CONFIGURATION_SECURITY_GROUP_IDS",
-        "DOMAIN_JOIN_INFO"
+        "DOMAIN_JOIN_INFO",
+        "IAM_ROLE_ARN"
       ]
     },
     "FleetAttributes":{
@@ -1117,6 +1539,8 @@
         "NETWORK_INTERFACE_LIMIT_EXCEEDED",
         "INTERNAL_SERVICE_ERROR",
         "IAM_SERVICE_ROLE_IS_MISSING",
+        "MACHINE_ROLE_IS_MISSING",
+        "STS_DISABLED_IN_REGION",
         "SUBNET_HAS_INSUFFICIENT_IP_ADDRESSES",
         "IAM_SERVICE_ROLE_MISSING_DESCRIBE_SUBNET_ACTION",
         "SUBNET_NOT_FOUND",
@@ -1125,6 +1549,8 @@
         "SECURITY_GROUPS_NOT_FOUND",
         "IGW_NOT_ATTACHED",
         "IAM_SERVICE_ROLE_MISSING_DESCRIBE_SECURITY_GROUPS_ACTION",
+        "FLEET_STOPPED",
+        "FLEET_INSTANCE_PROVISIONING_FAILURE",
         "DOMAIN_JOIN_ERROR_FILE_NOT_FOUND",
         "DOMAIN_JOIN_ERROR_ACCESS_DENIED",
         "DOMAIN_JOIN_ERROR_LOGON_FAILURE",
@@ -1174,6 +1600,7 @@
         "State":{"shape":"ImageState"},
         "Visibility":{"shape":"VisibilityType"},
         "ImageBuilderSupported":{"shape":"Boolean"},
+        "ImageBuilderName":{"shape":"String"},
         "Platform":{"shape":"PlatformType"},
         "Description":{"shape":"String"},
         "StateChangeReason":{"shape":"ImageStateChangeReason"},
@@ -1181,7 +1608,8 @@
         "CreatedTime":{"shape":"Timestamp"},
         "PublicBaseImageReleasedDate":{"shape":"Timestamp"},
         "AppstreamAgentVersion":{"shape":"AppstreamAgentVersion"},
-        "ImagePermissions":{"shape":"ImagePermissions"}
+        "ImagePermissions":{"shape":"ImagePermissions"},
+        "ImageErrors":{"shape":"ResourceErrors"}
       }
     },
     "ImageBuilder":{
@@ -1196,13 +1624,16 @@
         "VpcConfig":{"shape":"VpcConfig"},
         "InstanceType":{"shape":"String"},
         "Platform":{"shape":"PlatformType"},
+        "IamRoleArn":{"shape":"Arn"},
         "State":{"shape":"ImageBuilderState"},
         "StateChangeReason":{"shape":"ImageBuilderStateChangeReason"},
         "CreatedTime":{"shape":"Timestamp"},
         "EnableDefaultInternetAccess":{"shape":"BooleanObject"},
         "DomainJoinInfo":{"shape":"DomainJoinInfo"},
+        "NetworkAccessConfiguration":{"shape":"NetworkAccessConfiguration"},
         "ImageBuilderErrors":{"shape":"ResourceErrors"},
-        "AppstreamAgentVersion":{"shape":"AppstreamAgentVersion"}
+        "AppstreamAgentVersion":{"shape":"AppstreamAgentVersion"},
+        "AccessEndpoints":{"shape":"AccessEndpointList"}
       }
     },
     "ImageBuilderList":{
@@ -1220,7 +1651,9 @@
         "REBOOTING",
         "SNAPSHOTTING",
         "DELETING",
-        "FAILED"
+        "FAILED",
+        "UPDATING",
+        "PENDING_QUALIFICATION"
       ]
     },
     "ImageBuilderStateChangeReason":{
@@ -1255,7 +1688,9 @@
         "AVAILABLE",
         "FAILED",
         "COPYING",
-        "DELETING"
+        "DELETING",
+        "CREATING",
+        "IMPORTING"
       ]
     },
     "ImageStateChangeReason":{
@@ -1301,6 +1736,17 @@
         "Message":{"shape":"ErrorMessage"}
       },
       "exception":true
+    },
+    "LastReportGenerationExecutionError":{
+      "type":"structure",
+      "members":{
+        "ErrorCode":{"shape":"UsageReportExecutionErrorCode"},
+        "ErrorMessage":{"shape":"String"}
+      }
+    },
+    "LastReportGenerationExecutionErrors":{
+      "type":"list",
+      "member":{"shape":"LastReportGenerationExecutionError"}
     },
     "LimitExceededException":{
       "type":"structure",
@@ -1359,6 +1805,13 @@
       "max":500,
       "min":0
     },
+    "MessageAction":{
+      "type":"string",
+      "enum":[
+        "SUPPRESS",
+        "RESEND"
+      ]
+    },
     "Metadata":{
       "type":"map",
       "key":{"shape":"String"},
@@ -1399,7 +1852,11 @@
     },
     "PlatformType":{
       "type":"string",
-      "enum":["WINDOWS"]
+      "enum":[
+        "WINDOWS",
+        "WINDOWS_SERVER_2016",
+        "WINDOWS_SERVER_2019"
+      ]
     },
     "RedirectURL":{
       "type":"string",
@@ -1409,6 +1866,13 @@
       "type":"string",
       "max":32,
       "min":1
+    },
+    "RequestLimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "exception":true
     },
     "ResourceAlreadyExistsException":{
       "type":"structure",
@@ -1431,6 +1895,7 @@
     },
     "ResourceIdentifier":{
       "type":"string",
+      "max":2048,
       "min":1
     },
     "ResourceInUseException":{
@@ -1485,9 +1950,19 @@
         "StackName":{"shape":"String"},
         "FleetName":{"shape":"String"},
         "State":{"shape":"SessionState"},
+        "ConnectionState":{"shape":"SessionConnectionState"},
+        "StartTime":{"shape":"Timestamp"},
+        "MaxExpirationTime":{"shape":"Timestamp"},
         "AuthenticationType":{"shape":"AuthenticationType"},
         "NetworkAccessConfiguration":{"shape":"NetworkAccessConfiguration"}
       }
+    },
+    "SessionConnectionState":{
+      "type":"string",
+      "enum":[
+        "CONNECTED",
+        "NOT_CONNECTED"
+      ]
     },
     "SessionList":{
       "type":"list",
@@ -1500,6 +1975,10 @@
         "PENDING",
         "EXPIRED"
       ]
+    },
+    "SettingsGroup":{
+      "type":"string",
+      "max":100
     },
     "SharedImagePermissions":{
       "type":"structure",
@@ -1529,7 +2008,10 @@
         "RedirectURL":{"shape":"RedirectURL"},
         "FeedbackURL":{"shape":"FeedbackURL"},
         "StackErrors":{"shape":"StackErrors"},
-        "UserSettings":{"shape":"UserSettingList"}
+        "UserSettings":{"shape":"UserSettingList"},
+        "ApplicationSettings":{"shape":"ApplicationSettingsResponse"},
+        "AccessEndpoints":{"shape":"AccessEndpointList"},
+        "EmbedHostDomains":{"shape":"EmbedHostDomains"}
       }
     },
     "StackAttribute":{
@@ -1542,7 +2024,10 @@
         "REDIRECT_URL",
         "FEEDBACK_URL",
         "THEME_NAME",
-        "USER_SETTINGS"
+        "USER_SETTINGS",
+        "EMBED_HOST_DOMAINS",
+        "IAM_ROLE_ARN",
+        "ACCESS_ENDPOINTS"
       ]
     },
     "StackAttributes":{
@@ -1641,6 +2126,13 @@
         "HOMEFOLDERS",
         "GOOGLE_DRIVE",
         "ONE_DRIVE"
+      ]
+    },
+    "StreamView":{
+      "type":"string",
+      "enum":[
+        "APP",
+        "DESKTOP"
       ]
     },
     "StreamingUrlUserId":{
@@ -1753,7 +2245,10 @@
         "DisplayName":{"shape":"DisplayName"},
         "EnableDefaultInternetAccess":{"shape":"BooleanObject"},
         "DomainJoinInfo":{"shape":"DomainJoinInfo"},
-        "AttributesToDelete":{"shape":"FleetAttributes"}
+        "IdleDisconnectTimeoutInSeconds":{"shape":"Integer"},
+        "AttributesToDelete":{"shape":"FleetAttributes"},
+        "IamRoleArn":{"shape":"Arn"},
+        "StreamView":{"shape":"StreamView"}
       }
     },
     "UpdateFleetResult":{
@@ -1795,7 +2290,10 @@
         "RedirectURL":{"shape":"RedirectURL"},
         "FeedbackURL":{"shape":"FeedbackURL"},
         "AttributesToDelete":{"shape":"StackAttributes"},
-        "UserSettings":{"shape":"UserSettingList"}
+        "UserSettings":{"shape":"UserSettingList"},
+        "ApplicationSettings":{"shape":"ApplicationSettings"},
+        "AccessEndpoints":{"shape":"AccessEndpointList"},
+        "EmbedHostDomains":{"shape":"EmbedHostDomains"}
       }
     },
     "UpdateStackResult":{
@@ -1804,10 +2302,59 @@
         "Stack":{"shape":"Stack"}
       }
     },
+    "UsageReportExecutionErrorCode":{
+      "type":"string",
+      "enum":[
+        "RESOURCE_NOT_FOUND",
+        "ACCESS_DENIED",
+        "INTERNAL_SERVICE_ERROR"
+      ]
+    },
+    "UsageReportSchedule":{
+      "type":"string",
+      "enum":["DAILY"]
+    },
+    "UsageReportSubscription":{
+      "type":"structure",
+      "members":{
+        "S3BucketName":{"shape":"String"},
+        "Schedule":{"shape":"UsageReportSchedule"},
+        "LastGeneratedReportDate":{"shape":"Timestamp"},
+        "SubscriptionErrors":{"shape":"LastReportGenerationExecutionErrors"}
+      }
+    },
+    "UsageReportSubscriptionList":{
+      "type":"list",
+      "member":{"shape":"UsageReportSubscription"}
+    },
+    "User":{
+      "type":"structure",
+      "required":["AuthenticationType"],
+      "members":{
+        "Arn":{"shape":"Arn"},
+        "UserName":{"shape":"Username"},
+        "Enabled":{"shape":"Boolean"},
+        "Status":{"shape":"String"},
+        "FirstName":{"shape":"UserAttributeValue"},
+        "LastName":{"shape":"UserAttributeValue"},
+        "CreatedTime":{"shape":"Timestamp"},
+        "AuthenticationType":{"shape":"AuthenticationType"}
+      }
+    },
+    "UserAttributeValue":{
+      "type":"string",
+      "max":2048,
+      "pattern":"^[A-Za-z0-9_\\-\\s]+$",
+      "sensitive":true
+    },
     "UserId":{
       "type":"string",
-      "max":32,
+      "max":128,
       "min":2
+    },
+    "UserList":{
+      "type":"list",
+      "member":{"shape":"User"}
     },
     "UserSetting":{
       "type":"structure",
@@ -1824,6 +2371,54 @@
       "type":"list",
       "member":{"shape":"UserSetting"},
       "min":1
+    },
+    "UserStackAssociation":{
+      "type":"structure",
+      "required":[
+        "StackName",
+        "UserName",
+        "AuthenticationType"
+      ],
+      "members":{
+        "StackName":{"shape":"String"},
+        "UserName":{"shape":"Username"},
+        "AuthenticationType":{"shape":"AuthenticationType"},
+        "SendEmailNotification":{"shape":"Boolean"}
+      }
+    },
+    "UserStackAssociationError":{
+      "type":"structure",
+      "members":{
+        "UserStackAssociation":{"shape":"UserStackAssociation"},
+        "ErrorCode":{"shape":"UserStackAssociationErrorCode"},
+        "ErrorMessage":{"shape":"String"}
+      }
+    },
+    "UserStackAssociationErrorCode":{
+      "type":"string",
+      "enum":[
+        "STACK_NOT_FOUND",
+        "USER_NAME_NOT_FOUND",
+        "DIRECTORY_NOT_FOUND",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "UserStackAssociationErrorList":{
+      "type":"list",
+      "member":{"shape":"UserStackAssociationError"}
+    },
+    "UserStackAssociationList":{
+      "type":"list",
+      "member":{"shape":"UserStackAssociation"},
+      "max":25,
+      "min":1
+    },
+    "Username":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[\\p{L}\\p{M}\\p{S}\\p{N}\\p{P}]+",
+      "sensitive":true
     },
     "VisibilityType":{
       "type":"string",

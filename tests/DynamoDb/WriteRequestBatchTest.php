@@ -20,13 +20,15 @@ class WriteRequestBatchTest extends TestCase
     {
         // Ensure threshold is correctly calculated
         $batch = new WriteRequestBatch($this->getTestClient('DynamoDb'), ['pool_size' => 2]);
-        $this->assertEquals(50, $this->readAttribute($batch, 'config')['threshold']);
+        $this->assertSame(50, $this->readAttribute($batch, 'config')['threshold']);
     }
 
-    /** @dataProvider getInvalidArgUseCases */
+    /**
+     * @dataProvider getInvalidArgUseCases
+     * @expectedException \InvalidArgumentException
+     */
     public function testInstantiationFailsOnInvalidArgs($config)
     {
-        $this->setExpectedException('InvalidArgumentException');
         new WriteRequestBatch($this->getTestClient('DynamoDb'), $config);
     }
 
@@ -63,10 +65,12 @@ class WriteRequestBatchTest extends TestCase
         );
     }
 
+    /**
+     * @expectedException \RuntimeException
+     */
     public function testMustProvideTable()
     {
         $batch = new WriteRequestBatch($this->getTestClient('DynamoDb'));
-        $this->setExpectedException('RuntimeException');
         $batch->put(['a' => 'b']);
     }
 
@@ -200,6 +204,6 @@ class WriteRequestBatchTest extends TestCase
         // After 2 complete flushes, the queue should be empty, and there should
         // been 2 unhandled errors that would have triggered the callback.
         $this->assertCount(0, $this->readAttribute($batch, 'queue'));
-        $this->assertEquals(2, $unhandledErrors);
+        $this->assertSame(2, $unhandledErrors);
     }
 }

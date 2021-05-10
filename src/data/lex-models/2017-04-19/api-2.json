@@ -515,6 +515,22 @@
         {"shape":"BadRequestException"}
       ]
     },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"InternalFailureException"},
+        {"shape":"LimitExceededException"}
+      ]
+    },
     "PutBot":{
       "name":"PutBot",
       "http":{
@@ -597,6 +613,40 @@
         {"shape":"InternalFailureException"},
         {"shape":"BadRequestException"}
       ]
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalFailureException"},
+        {"shape":"LimitExceededException"}
+      ]
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalFailureException"},
+        {"shape":"LimitExceededException"}
+      ]
     }
   },
   "shapes":{
@@ -611,6 +661,11 @@
       "max":100,
       "min":1,
       "pattern":"^(-|^([A-Za-z]_?)+$)$"
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1
     },
     "BadRequestException":{
       "type":"structure",
@@ -631,7 +686,8 @@
         "botName":{"shape":"BotName"},
         "lastUpdatedDate":{"shape":"Timestamp"},
         "createdDate":{"shape":"Timestamp"},
-        "checksum":{"shape":"String"}
+        "checksum":{"shape":"String"},
+        "conversationLogs":{"shape":"ConversationLogsResponse"}
       }
     },
     "BotAliasMetadataList":{
@@ -759,6 +815,11 @@
         "messageVersion":{"shape":"MessageVersion"}
       }
     },
+    "ConfidenceThreshold":{
+      "type":"double",
+      "max":1,
+      "min":0
+    },
     "ConflictException":{
       "type":"structure",
       "members":{
@@ -779,6 +840,34 @@
         "SSML",
         "CustomPayload"
       ]
+    },
+    "ContextTimeToLiveInSeconds":{
+      "type":"integer",
+      "max":86400,
+      "min":5
+    },
+    "ContextTurnsToLive":{
+      "type":"integer",
+      "max":20,
+      "min":1
+    },
+    "ConversationLogsRequest":{
+      "type":"structure",
+      "required":[
+        "logSettings",
+        "iamRoleArn"
+      ],
+      "members":{
+        "logSettings":{"shape":"LogSettingsRequestList"},
+        "iamRoleArn":{"shape":"IamRoleArn"}
+      }
+    },
+    "ConversationLogsResponse":{
+      "type":"structure",
+      "members":{
+        "logSettings":{"shape":"LogSettingsResponseList"},
+        "iamRoleArn":{"shape":"IamRoleArn"}
+      }
     },
     "Count":{"type":"integer"},
     "CreateBotVersionRequest":{
@@ -810,7 +899,9 @@
         "checksum":{"shape":"String"},
         "version":{"shape":"Version"},
         "locale":{"shape":"Locale"},
-        "childDirected":{"shape":"Boolean"}
+        "childDirected":{"shape":"Boolean"},
+        "enableModelImprovements":{"shape":"Boolean"},
+        "detectSentiment":{"shape":"Boolean"}
       }
     },
     "CreateIntentVersionRequest":{
@@ -842,7 +933,10 @@
         "lastUpdatedDate":{"shape":"Timestamp"},
         "createdDate":{"shape":"Timestamp"},
         "version":{"shape":"Version"},
-        "checksum":{"shape":"String"}
+        "checksum":{"shape":"String"},
+        "kendraConfiguration":{"shape":"KendraConfiguration"},
+        "inputContexts":{"shape":"InputContextList"},
+        "outputContexts":{"shape":"OutputContextList"}
       }
     },
     "CreateSlotTypeVersionRequest":{
@@ -867,7 +961,9 @@
         "createdDate":{"shape":"Timestamp"},
         "version":{"shape":"Version"},
         "checksum":{"shape":"String"},
-        "valueSelectionStrategy":{"shape":"SlotValueSelectionStrategy"}
+        "valueSelectionStrategy":{"shape":"SlotValueSelectionStrategy"},
+        "parentSlotTypeSignature":{"shape":"CustomOrBuiltinSlotTypeName"},
+        "slotTypeConfigurations":{"shape":"SlotTypeConfigurations"}
       }
     },
     "CustomOrBuiltinSlotTypeName":{
@@ -1034,6 +1130,13 @@
       "max":200,
       "min":0
     },
+    "Destination":{
+      "type":"string",
+      "enum":[
+        "CLOUDWATCH_LOGS",
+        "S3"
+      ]
+    },
     "EnumerationValue":{
       "type":"structure",
       "required":["value"],
@@ -1046,7 +1149,7 @@
       "type":"list",
       "member":{"shape":"EnumerationValue"},
       "max":10000,
-      "min":1
+      "min":0
     },
     "ExportStatus":{
       "type":"string",
@@ -1117,7 +1220,8 @@
         "botName":{"shape":"BotName"},
         "lastUpdatedDate":{"shape":"Timestamp"},
         "createdDate":{"shape":"Timestamp"},
-        "checksum":{"shape":"String"}
+        "checksum":{"shape":"String"},
+        "conversationLogs":{"shape":"ConversationLogsResponse"}
       }
     },
     "GetBotAliasesRequest":{
@@ -1258,6 +1362,8 @@
         "name":{"shape":"BotName"},
         "description":{"shape":"Description"},
         "intents":{"shape":"IntentList"},
+        "enableModelImprovements":{"shape":"Boolean"},
+        "nluIntentConfidenceThreshold":{"shape":"ConfidenceThreshold"},
         "clarificationPrompt":{"shape":"Prompt"},
         "abortStatement":{"shape":"Statement"},
         "status":{"shape":"Status"},
@@ -1269,7 +1375,8 @@
         "checksum":{"shape":"String"},
         "version":{"shape":"Version"},
         "locale":{"shape":"Locale"},
-        "childDirected":{"shape":"Boolean"}
+        "childDirected":{"shape":"Boolean"},
+        "detectSentiment":{"shape":"Boolean"}
       }
     },
     "GetBotVersionsRequest":{
@@ -1512,7 +1619,10 @@
         "lastUpdatedDate":{"shape":"Timestamp"},
         "createdDate":{"shape":"Timestamp"},
         "version":{"shape":"Version"},
-        "checksum":{"shape":"String"}
+        "checksum":{"shape":"String"},
+        "kendraConfiguration":{"shape":"KendraConfiguration"},
+        "inputContexts":{"shape":"InputContextList"},
+        "outputContexts":{"shape":"OutputContextList"}
       }
     },
     "GetIntentVersionsRequest":{
@@ -1599,7 +1709,9 @@
         "createdDate":{"shape":"Timestamp"},
         "version":{"shape":"Version"},
         "checksum":{"shape":"String"},
-        "valueSelectionStrategy":{"shape":"SlotValueSelectionStrategy"}
+        "valueSelectionStrategy":{"shape":"SlotValueSelectionStrategy"},
+        "parentSlotTypeSignature":{"shape":"CustomOrBuiltinSlotTypeName"},
+        "slotTypeConfigurations":{"shape":"SlotTypeConfigurations"}
       }
     },
     "GetSlotTypeVersionsRequest":{
@@ -1695,6 +1807,12 @@
       "max":5,
       "min":1
     },
+    "IamRoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:[\\w\\-]+:iam::[\\d]{12}:role/.+$"
+    },
     "ImportStatus":{
       "type":"string",
       "enum":[
@@ -1702,6 +1820,25 @@
         "COMPLETE",
         "FAILED"
       ]
+    },
+    "InputContext":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{"shape":"InputContextName"}
+      }
+    },
+    "InputContextList":{
+      "type":"list",
+      "member":{"shape":"InputContext"},
+      "max":5,
+      "min":0
+    },
+    "InputContextName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"^([A-Za-z]_?)+$"
     },
     "Intent":{
       "type":"structure",
@@ -1753,6 +1890,30 @@
       "exception":true,
       "fault":true
     },
+    "KendraConfiguration":{
+      "type":"structure",
+      "required":[
+        "kendraIndex",
+        "role"
+      ],
+      "members":{
+        "kendraIndex":{"shape":"KendraIndexArn"},
+        "queryFilterString":{"shape":"QueryFilterString"},
+        "role":{"shape":"roleArn"}
+      }
+    },
+    "KendraIndexArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws:kendra:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:index\\/[a-zA-Z0-9][a-zA-Z0-9_-]*"
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:[\\w\\-]+:kms:[\\w\\-]+:[\\d]{12}:(?:key\\/[\\w\\-]+|alias\\/[a-zA-Z0-9:\\/_\\-]{1,256})$"
+    },
     "LambdaARN":{
       "type":"string",
       "max":2048,
@@ -1776,6 +1937,23 @@
       "type":"list",
       "member":{"shape":"UtteranceData"}
     },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"AmazonResourceName",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{"shape":"TagList"}
+      }
+    },
     "ListsOfUtterances":{
       "type":"list",
       "member":{"shape":"UtteranceList"}
@@ -1783,14 +1961,61 @@
     "Locale":{
       "type":"string",
       "enum":[
-        "en-US",
+        "de-DE",
+        "en-AU",
         "en-GB",
-        "de-DE"
+        "en-US",
+        "es-419",
+        "es-ES",
+        "es-US",
+        "fr-FR",
+        "fr-CA",
+        "it-IT",
+        "ja-JP"
       ]
     },
     "LocaleList":{
       "type":"list",
       "member":{"shape":"Locale"}
+    },
+    "LogSettingsRequest":{
+      "type":"structure",
+      "required":[
+        "logType",
+        "destination",
+        "resourceArn"
+      ],
+      "members":{
+        "logType":{"shape":"LogType"},
+        "destination":{"shape":"Destination"},
+        "kmsKeyArn":{"shape":"KmsKeyArn"},
+        "resourceArn":{"shape":"ResourceArn"}
+      }
+    },
+    "LogSettingsRequestList":{
+      "type":"list",
+      "member":{"shape":"LogSettingsRequest"}
+    },
+    "LogSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "logType":{"shape":"LogType"},
+        "destination":{"shape":"Destination"},
+        "kmsKeyArn":{"shape":"KmsKeyArn"},
+        "resourceArn":{"shape":"ResourceArn"},
+        "resourcePrefix":{"shape":"ResourcePrefix"}
+      }
+    },
+    "LogSettingsResponseList":{
+      "type":"list",
+      "member":{"shape":"LogSettingsResponse"}
+    },
+    "LogType":{
+      "type":"string",
+      "enum":[
+        "AUDIO",
+        "TEXT"
+      ]
     },
     "MaxResults":{
       "type":"integer",
@@ -1849,6 +2074,38 @@
       "min":1,
       "pattern":"[0-9]+"
     },
+    "ObfuscationSetting":{
+      "type":"string",
+      "enum":[
+        "NONE",
+        "DEFAULT_OBFUSCATION"
+      ]
+    },
+    "OutputContext":{
+      "type":"structure",
+      "required":[
+        "name",
+        "timeToLiveInSeconds",
+        "turnsToLive"
+      ],
+      "members":{
+        "name":{"shape":"OutputContextName"},
+        "timeToLiveInSeconds":{"shape":"ContextTimeToLiveInSeconds"},
+        "turnsToLive":{"shape":"ContextTurnsToLive"}
+      }
+    },
+    "OutputContextList":{
+      "type":"list",
+      "member":{"shape":"OutputContext"},
+      "max":10,
+      "min":0
+    },
+    "OutputContextName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"^([A-Za-z]_?)+$"
+    },
     "PreconditionFailedException":{
       "type":"structure",
       "members":{
@@ -1906,7 +2163,9 @@
           "location":"uri",
           "locationName":"botName"
         },
-        "checksum":{"shape":"String"}
+        "checksum":{"shape":"String"},
+        "conversationLogs":{"shape":"ConversationLogsRequest"},
+        "tags":{"shape":"TagList"}
       }
     },
     "PutBotAliasResponse":{
@@ -1918,7 +2177,9 @@
         "botName":{"shape":"BotName"},
         "lastUpdatedDate":{"shape":"Timestamp"},
         "createdDate":{"shape":"Timestamp"},
-        "checksum":{"shape":"String"}
+        "checksum":{"shape":"String"},
+        "conversationLogs":{"shape":"ConversationLogsResponse"},
+        "tags":{"shape":"TagList"}
       }
     },
     "PutBotRequest":{
@@ -1936,6 +2197,8 @@
         },
         "description":{"shape":"Description"},
         "intents":{"shape":"IntentList"},
+        "enableModelImprovements":{"shape":"Boolean"},
+        "nluIntentConfidenceThreshold":{"shape":"ConfidenceThreshold"},
         "clarificationPrompt":{"shape":"Prompt"},
         "abortStatement":{"shape":"Statement"},
         "idleSessionTTLInSeconds":{"shape":"SessionTTL"},
@@ -1944,7 +2207,9 @@
         "processBehavior":{"shape":"ProcessBehavior"},
         "locale":{"shape":"Locale"},
         "childDirected":{"shape":"Boolean"},
-        "createVersion":{"shape":"Boolean"}
+        "detectSentiment":{"shape":"Boolean"},
+        "createVersion":{"shape":"Boolean"},
+        "tags":{"shape":"TagList"}
       }
     },
     "PutBotResponse":{
@@ -1953,6 +2218,8 @@
         "name":{"shape":"BotName"},
         "description":{"shape":"Description"},
         "intents":{"shape":"IntentList"},
+        "enableModelImprovements":{"shape":"Boolean"},
+        "nluIntentConfidenceThreshold":{"shape":"ConfidenceThreshold"},
         "clarificationPrompt":{"shape":"Prompt"},
         "abortStatement":{"shape":"Statement"},
         "status":{"shape":"Status"},
@@ -1965,7 +2232,9 @@
         "version":{"shape":"Version"},
         "locale":{"shape":"Locale"},
         "childDirected":{"shape":"Boolean"},
-        "createVersion":{"shape":"Boolean"}
+        "createVersion":{"shape":"Boolean"},
+        "detectSentiment":{"shape":"Boolean"},
+        "tags":{"shape":"TagList"}
       }
     },
     "PutIntentRequest":{
@@ -1988,7 +2257,10 @@
         "fulfillmentActivity":{"shape":"FulfillmentActivity"},
         "parentIntentSignature":{"shape":"BuiltinIntentSignature"},
         "checksum":{"shape":"String"},
-        "createVersion":{"shape":"Boolean"}
+        "createVersion":{"shape":"Boolean"},
+        "kendraConfiguration":{"shape":"KendraConfiguration"},
+        "inputContexts":{"shape":"InputContextList"},
+        "outputContexts":{"shape":"OutputContextList"}
       }
     },
     "PutIntentResponse":{
@@ -2009,7 +2281,10 @@
         "createdDate":{"shape":"Timestamp"},
         "version":{"shape":"Version"},
         "checksum":{"shape":"String"},
-        "createVersion":{"shape":"Boolean"}
+        "createVersion":{"shape":"Boolean"},
+        "kendraConfiguration":{"shape":"KendraConfiguration"},
+        "inputContexts":{"shape":"InputContextList"},
+        "outputContexts":{"shape":"OutputContextList"}
       }
     },
     "PutSlotTypeRequest":{
@@ -2025,7 +2300,9 @@
         "enumerationValues":{"shape":"EnumerationValues"},
         "checksum":{"shape":"String"},
         "valueSelectionStrategy":{"shape":"SlotValueSelectionStrategy"},
-        "createVersion":{"shape":"Boolean"}
+        "createVersion":{"shape":"Boolean"},
+        "parentSlotTypeSignature":{"shape":"CustomOrBuiltinSlotTypeName"},
+        "slotTypeConfigurations":{"shape":"SlotTypeConfigurations"}
       }
     },
     "PutSlotTypeResponse":{
@@ -2039,8 +2316,14 @@
         "version":{"shape":"Version"},
         "checksum":{"shape":"String"},
         "valueSelectionStrategy":{"shape":"SlotValueSelectionStrategy"},
-        "createVersion":{"shape":"Boolean"}
+        "createVersion":{"shape":"Boolean"},
+        "parentSlotTypeSignature":{"shape":"CustomOrBuiltinSlotTypeName"},
+        "slotTypeConfigurations":{"shape":"SlotTypeConfigurations"}
       }
+    },
+    "QueryFilterString":{
+      "type":"string",
+      "min":0
     },
     "ReferenceType":{
       "type":"string",
@@ -2051,6 +2334,17 @@
         "BotChannel"
       ]
     },
+    "RegexPattern":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "ResourceArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^arn:[\\w\\-]+:(?:logs:[\\w\\-]+:[\\d]{12}:log-group:[\\.\\-_/#A-Za-z0-9]{1,512}(?::\\*)?|s3:::[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9])$"
+    },
     "ResourceInUseException":{
       "type":"structure",
       "members":{
@@ -2059,6 +2353,10 @@
       },
       "error":{"httpStatusCode":400},
       "exception":true
+    },
+    "ResourcePrefix":{
+      "type":"string",
+      "max":1024
     },
     "ResourceReference":{
       "type":"structure",
@@ -2100,7 +2398,9 @@
         "valueElicitationPrompt":{"shape":"Prompt"},
         "priority":{"shape":"Priority"},
         "sampleUtterances":{"shape":"SlotUtteranceList"},
-        "responseCard":{"shape":"ResponseCard"}
+        "responseCard":{"shape":"ResponseCard"},
+        "obfuscationSetting":{"shape":"ObfuscationSetting"},
+        "defaultValueSpec":{"shape":"SlotDefaultValueSpec"}
       }
     },
     "SlotConstraint":{
@@ -2109,6 +2409,31 @@
         "Required",
         "Optional"
       ]
+    },
+    "SlotDefaultValue":{
+      "type":"structure",
+      "required":["defaultValue"],
+      "members":{
+        "defaultValue":{"shape":"SlotDefaultValueString"}
+      }
+    },
+    "SlotDefaultValueList":{
+      "type":"list",
+      "member":{"shape":"SlotDefaultValue"},
+      "max":10,
+      "min":0
+    },
+    "SlotDefaultValueSpec":{
+      "type":"structure",
+      "required":["defaultValueList"],
+      "members":{
+        "defaultValueList":{"shape":"SlotDefaultValueList"}
+      }
+    },
+    "SlotDefaultValueString":{
+      "type":"string",
+      "max":202,
+      "min":1
     },
     "SlotList":{
       "type":"list",
@@ -2121,6 +2446,18 @@
       "max":100,
       "min":1,
       "pattern":"^([A-Za-z](-|_|.)?)+$"
+    },
+    "SlotTypeConfiguration":{
+      "type":"structure",
+      "members":{
+        "regexConfiguration":{"shape":"SlotTypeRegexConfiguration"}
+      }
+    },
+    "SlotTypeConfigurations":{
+      "type":"list",
+      "member":{"shape":"SlotTypeConfiguration"},
+      "max":10,
+      "min":0
     },
     "SlotTypeMetadata":{
       "type":"structure",
@@ -2141,6 +2478,13 @@
       "max":100,
       "min":1,
       "pattern":"^([A-Za-z]_?)+$"
+    },
+    "SlotTypeRegexConfiguration":{
+      "type":"structure",
+      "required":["pattern"],
+      "members":{
+        "pattern":{"shape":"RegexPattern"}
+      }
     },
     "SlotUtteranceList":{
       "type":"list",
@@ -2165,7 +2509,8 @@
       "members":{
         "payload":{"shape":"Blob"},
         "resourceType":{"shape":"ResourceType"},
-        "mergeStrategy":{"shape":"MergeStrategy"}
+        "mergeStrategy":{"shape":"MergeStrategy"},
+        "tags":{"shape":"TagList"}
       }
     },
     "StartImportResponse":{
@@ -2176,6 +2521,7 @@
         "mergeStrategy":{"shape":"MergeStrategy"},
         "importId":{"shape":"String"},
         "importStatus":{"shape":"ImportStatus"},
+        "tags":{"shape":"TagList"},
         "createdDate":{"shape":"Timestamp"}
       }
     },
@@ -2192,6 +2538,7 @@
       "enum":[
         "BUILDING",
         "READY",
+        "READY_BASIC_TESTING",
         "FAILED",
         "NOT_BUILT"
       ]
@@ -2212,7 +2559,84 @@
       "type":"list",
       "member":{"shape":"Value"}
     },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "key",
+        "value"
+      ],
+      "members":{
+        "key":{"shape":"TagKey"},
+        "value":{"shape":"TagValue"}
+      }
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"AmazonResourceName",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{"shape":"TagList"}
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
     "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"AmazonResourceName",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "UserId":{
       "type":"string",
       "max":100,
@@ -2255,6 +2679,12 @@
       "max":64,
       "min":1,
       "pattern":"\\$LATEST|[0-9]+"
+    },
+    "roleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws:iam::[0-9]{12}:role/.*"
     }
   }
 }

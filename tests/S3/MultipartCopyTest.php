@@ -31,14 +31,18 @@ class MultipartCopyTest extends TestCase
         ]);
 
         if ($error) {
-            $this->setExpectedException($error);
+            if (method_exists($this, 'expectException')) {
+                $this->expectException($error);
+            } else {
+                $this->setExpectedException($error);
+            }
         }
 
         $uploader = new MultipartCopy($client, '/bucket/key', $uploadOptions);
         $result = $uploader->upload();
 
         $this->assertTrue($uploader->getState()->isCompleted());
-        $this->assertEquals($url, $result['ObjectURL']);
+        $this->assertSame($url, $result['ObjectURL']);
     }
 
     public function getTestCases()
@@ -79,8 +83,8 @@ class MultipartCopyTest extends TestCase
         $result = $uploader->upload();
 
         $this->assertTrue($uploader->getState()->isCompleted());
-        $this->assertEquals(5 * self::MB, $uploader->getState()->getPartSize());
-        $this->assertEquals($url, $result['ObjectURL']);
+        $this->assertSame(5 * self::MB, $uploader->getState()->getPartSize());
+        $this->assertSame($url, $result['ObjectURL']);
     }
 
     public function testCanUseCaseInsensitiveConfigKeys()
@@ -114,13 +118,13 @@ class MultipartCopyTest extends TestCase
             'source_metadata' => new Result(['ContentLength' => 11 * self::MB]),
             'params'          => ['RequestPayer' => 'test'],
             'before_initiate' => function($command) {
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             },
             'before_upload'   => function($command) {
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             },
             'before_complete' => function($command) {
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             }
         ];
         $url = 'http://foo.s3.amazonaws.com/bar';
@@ -137,6 +141,6 @@ class MultipartCopyTest extends TestCase
         $result = $uploader->upload();
 
         $this->assertTrue($uploader->getState()->isCompleted());
-        $this->assertEquals($url, $result['ObjectURL']);
+        $this->assertSame($url, $result['ObjectURL']);
     }
 }

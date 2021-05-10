@@ -4,6 +4,9 @@ namespace Aws\Test\DynamoDb;
 use Aws\Command;
 use Aws\DynamoDb\DynamoDbClient;
 use Aws\DynamoDb\Exception\DynamoDbException;
+use Aws\Exception\AwsException;
+use Aws\MockHandler;
+use Aws\Result;
 use Aws\Test\UsesServiceTrait;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Response;
@@ -12,12 +15,14 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Aws\DynamoDb\DynamoDbClient
- * @runTestsInSeparateProcesses
  */
 class DynamoDbClientTest extends TestCase
 {
     use UsesServiceTrait;
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testRegisterSessionHandlerReturnsHandler()
     {
         $client = $this->getTestSdk()->createDynamoDb();
@@ -81,6 +86,80 @@ class DynamoDbClientTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider dataProviderRetrySettings
+     */
+    public function testRetriesOnDynamoSpecificRetryableException($settings)
+    {
+        $params = [
+            'TableName' => 'foo',
+            'Key' => ['baz' => ['S' => 'foo']]
+        ];
+        $dynamoRetryableException = new AwsException(
+            'TransactionInProgressException',
+            new Command('GetItem', $params),
+            [
+                'code' => 'TransactionInProgressException'
+            ]
+        );
+        $queue = [
+            $dynamoRetryableException,
+            $dynamoRetryableException,
+            new AwsException(
+                'NonRetryableException',
+                new Command('GetItem', $params),
+                [
+                    'code' => 'NonRetryableException'
+                ]
+            ),
+            new Result(),
+        ];
+        $attemptCount = 0;
+        $callback = function() use (&$attemptCount) {
+            $attemptCount++;
+        };
+        $handler = new MockHandler($queue, $callback, $callback);
+
+        $client = new DynamoDbClient([
+            'region'       => 'us-east-1',
+            'version'      => 'latest',
+            'retries'      => $settings,
+        ]);
+
+        $list = $client->getHandlerList();
+        $list->setHandler($handler);
+
+        try {
+            $client->getItem($params);
+            $this->fail('This operation should have failed with a NonRetryableException.');
+        } catch(AwsException $e) {
+            $this->assertSame('NonRetryableException', $e->getAwsErrorCode());
+        }
+
+        $this->assertSame(3, $attemptCount);
+    }
+
+    public function dataProviderRetrySettings()
+    {
+        return [
+            [
+                [
+                    'mode' => 'legacy'
+                ]
+            ],
+            [
+                [
+                    'mode' => 'standard'
+                ]
+            ],
+            [
+                [
+                    'mode' => 'adaptive'
+                ]
+            ],
+        ];
+    }
+
     public function testValidatesAndRetriesCrc32()
     {
         $queue = [
@@ -100,7 +179,7 @@ class DynamoDbClientTest extends TestCase
         $client = new DynamoDbClient([
             'region'       => 'us-east-1',
             'version'      => 'latest',
-            'http_handler' => $handler
+            'http_handler' => $handler,
         ]);
 
         $client->getItem([
@@ -111,7 +190,12 @@ class DynamoDbClientTest extends TestCase
         $this->assertEmpty($queue);
     }
 
-    public function testAppliesRetryStatsConfig()
+    /**
+     * @dataProvider dataProviderRetrySettings
+     *
+     * @param $settings
+     */
+    public function testAppliesRetryStatsConfig($settings)
     {
         $client = new DynamoDbClient([
             'stats' => ['retries' => true],
@@ -124,6 +208,7 @@ class DynamoDbClientTest extends TestCase
                     ])
                 );
             },
+            'retries' => $settings
         ]);
 
         try {

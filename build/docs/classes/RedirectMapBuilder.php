@@ -51,7 +51,12 @@ class RedirectMapBuilder
                 }
             }
             // Fall back to service client main page if version not found
-            $redirectEntry []= $reWriteRulePrefix . $service->name . '(.*)'
+            if (!empty($service->uid)) {
+                $servicePrefix = $service->uid;
+            } else {
+                $servicePrefix = $service->name;
+            }
+            $redirectEntry []= $reWriteRulePrefix . $servicePrefix . '(.*)'
                 . $docPathPrefix . 'class-Aws.'. $service->namespace . '.'
                 . $service->namespace . 'Client.html' . $flags;
             $skipCount++;

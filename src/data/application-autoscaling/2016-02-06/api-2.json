@@ -2,7 +2,7 @@
   "version":"2.0",
   "metadata":{
     "apiVersion":"2016-02-06",
-    "endpointPrefix":"autoscaling",
+    "endpointPrefix":"application-autoscaling",
     "jsonVersion":"1.1",
     "protocol":"json",
     "serviceFullName":"Application Auto Scaling",
@@ -240,7 +240,8 @@
       "required":[
         "ServiceNamespace",
         "ScheduledActionName",
-        "ResourceId"
+        "ResourceId",
+        "ScalableDimension"
       ],
       "members":{
         "ServiceNamespace":{"shape":"ServiceNamespace"},
@@ -428,7 +429,13 @@
         "EC2SpotFleetRequestAverageNetworkOut",
         "SageMakerVariantInvocationsPerInstance",
         "ECSServiceAverageCPUUtilization",
-        "ECSServiceAverageMemoryUtilization"
+        "ECSServiceAverageMemoryUtilization",
+        "AppStreamAverageCapacityUtilization",
+        "ComprehendInferenceUtilization",
+        "LambdaProvisionedConcurrencyUtilization",
+        "CassandraReadCapacityUtilization",
+        "CassandraWriteCapacityUtilization",
+        "KafkaBrokerStorageUtilization"
       ]
     },
     "MetricUnit":{"type":"string"},
@@ -492,11 +499,13 @@
       "required":[
         "ServiceNamespace",
         "ScheduledActionName",
-        "ResourceId"
+        "ResourceId",
+        "ScalableDimension"
       ],
       "members":{
         "ServiceNamespace":{"shape":"ServiceNamespace"},
         "Schedule":{"shape":"ResourceIdMaxLen1600"},
+        "Timezone":{"shape":"ResourceIdMaxLen1600"},
         "ScheduledActionName":{"shape":"ScheduledActionName"},
         "ResourceId":{"shape":"ResourceIdMaxLen1600"},
         "ScalableDimension":{"shape":"ScalableDimension"},
@@ -523,7 +532,8 @@
         "ScalableDimension":{"shape":"ScalableDimension"},
         "MinCapacity":{"shape":"ResourceCapacity"},
         "MaxCapacity":{"shape":"ResourceCapacity"},
-        "RoleARN":{"shape":"ResourceIdMaxLen1600"}
+        "RoleARN":{"shape":"ResourceIdMaxLen1600"},
+        "SuspendedState":{"shape":"SuspendedState"}
       }
     },
     "RegisterScalableTargetResponse":{
@@ -544,7 +554,8 @@
     },
     "ResourceIdsMaxLen1600":{
       "type":"list",
-      "member":{"shape":"ResourceIdMaxLen1600"}
+      "member":{"shape":"ResourceIdMaxLen1600"},
+      "max":50
     },
     "ResourceLabel":{
       "type":"string",
@@ -564,7 +575,13 @@
         "dynamodb:index:WriteCapacityUnits",
         "rds:cluster:ReadReplicaCount",
         "sagemaker:variant:DesiredInstanceCount",
-        "custom-resource:ResourceType:Property"
+        "custom-resource:ResourceType:Property",
+        "comprehend:document-classifier-endpoint:DesiredInferenceUnits",
+        "comprehend:entity-recognizer-endpoint:DesiredInferenceUnits",
+        "lambda:function:ProvisionedConcurrency",
+        "cassandra:table:ReadCapacityUnits",
+        "cassandra:table:WriteCapacityUnits",
+        "kafka:broker-storage:VolumeSize"
       ]
     },
     "ScalableTarget":{
@@ -585,7 +602,8 @@
         "MinCapacity":{"shape":"ResourceCapacity"},
         "MaxCapacity":{"shape":"ResourceCapacity"},
         "RoleARN":{"shape":"ResourceIdMaxLen1600"},
-        "CreationTime":{"shape":"TimestampType"}
+        "CreationTime":{"shape":"TimestampType"},
+        "SuspendedState":{"shape":"SuspendedState"}
       }
     },
     "ScalableTargetAction":{
@@ -669,6 +687,7 @@
         "CreationTime":{"shape":"TimestampType"}
       }
     },
+    "ScalingSuspended":{"type":"boolean"},
     "ScheduledAction":{
       "type":"structure",
       "required":[
@@ -684,6 +703,7 @@
         "ScheduledActionARN":{"shape":"ResourceIdMaxLen1600"},
         "ServiceNamespace":{"shape":"ServiceNamespace"},
         "Schedule":{"shape":"ResourceIdMaxLen1600"},
+        "Timezone":{"shape":"ResourceIdMaxLen1600"},
         "ResourceId":{"shape":"ResourceIdMaxLen1600"},
         "ScalableDimension":{"shape":"ScalableDimension"},
         "StartTime":{"shape":"TimestampType"},
@@ -712,7 +732,11 @@
         "dynamodb",
         "rds",
         "sagemaker",
-        "custom-resource"
+        "custom-resource",
+        "comprehend",
+        "lambda",
+        "cassandra",
+        "kafka"
       ]
     },
     "StepAdjustment":{
@@ -736,6 +760,14 @@
         "MinAdjustmentMagnitude":{"shape":"MinAdjustmentMagnitude"},
         "Cooldown":{"shape":"Cooldown"},
         "MetricAggregationType":{"shape":"MetricAggregationType"}
+      }
+    },
+    "SuspendedState":{
+      "type":"structure",
+      "members":{
+        "DynamicScalingInSuspended":{"shape":"ScalingSuspended"},
+        "DynamicScalingOutSuspended":{"shape":"ScalingSuspended"},
+        "ScheduledScalingSuspended":{"shape":"ScalingSuspended"}
       }
     },
     "TargetTrackingScalingPolicyConfiguration":{

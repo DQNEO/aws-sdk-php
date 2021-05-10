@@ -1,7 +1,8 @@
 <?php
 namespace Aws\Test\Integ;
 
-use Behat\Behat\Tester\Exception\PendingException;
+use Aws\S3\Exception\S3Exception;
+use Aws\Sts\StsClient;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Gherkin\Node\PyStringNode;
@@ -13,12 +14,13 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7;
 use PHPUnit_Framework_Assert as Assert;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
 class S3Context implements Context, SnippetAcceptingContext
 {
     use IntegUtils;
+
+    const INTEG_LOG_BUCKET_PREFIX = 'aws-php-sdk-test-integ-logs';
 
     /** @var RequestInterface */
     private $presignedRequest;
@@ -66,7 +68,7 @@ class S3Context implements Context, SnippetAcceptingContext
     }
 
     /**
-     * @BeforeSuite
+     * @BeforeFeature
      */
     public static function createTestBucket()
     {
@@ -80,13 +82,65 @@ class S3Context implements Context, SnippetAcceptingContext
     }
 
     /**
-     * @AfterSuite
+     * @AfterFeature
      */
     public static function deleteTestBucket()
     {
         $client = self::getSdk()->createS3();
+
+        $result = self::executeWithRetries(
+            $client,
+            'listObjectsV2',
+            ['Bucket' => self::getResourceName()],
+            10,
+            [404]
+        );
+
+        // Delete objects & wait until no longer available before deleting bucket
         $client->deleteMatchingObjects(self::getResourceName(), '', '//');
-        $client->deleteBucket(['Bucket' => self::getResourceName()]);
+        if (!empty($result['Contents']) && is_array($result['Contents'])) {
+            foreach ($result['Contents'] as $object) {
+                $client->waitUntil('ObjectNotExists', [
+                    'Bucket' => self::getResourceName(),
+                    'Key' => $object['Key'],
+                    '@waiter' => [
+                        'maxAttempts' => 60,
+                        'delay' => 10,
+                    ],
+                ]);
+            }
+        }
+
+        // Delete bucket
+        $result = self::executeWithRetries(
+            $client,
+            'deleteBucket',
+            ['Bucket' => self::getResourceName()],
+            10,
+            [404]
+        );
+
+        // Use account number to generate a unique bucket name
+        $sts = new StsClient([
+            'version' => 'latest',
+            'region' => 'us-east-1'
+        ]);
+        $identity = $sts->getCallerIdentity([]);
+        $logBucket = self::INTEG_LOG_BUCKET_PREFIX . "-{$identity['Account']}";
+
+        // Log bucket deletion result
+        if (!($client->doesBucketExist($logBucket))) {
+            $client->createBucket([
+                'Bucket' => $logBucket
+            ]);
+        }
+        $client->putObject([
+            'Bucket' => $logBucket,
+            'Key' => self::getResourceName() . '-' . date('Y-M-d__H_i_s'),
+            'Body' => print_r($result->toArray(), true)
+        ]);
+
+        // Wait until bucket is no longer available
         $client->waitUntil('BucketNotExists', [
             'Bucket' => self::getResourceName(),
         ]);
@@ -290,5 +344,41 @@ class S3Context implements Context, SnippetAcceptingContext
             'contents' => $this->stream,
             'filename' => 'file.ext',
         ];
+    }
+
+    /**
+     * Executes S3 client method, adding retries for specified status codes.
+     * A practical work-around for the testing workflow, given eventual
+     * consistency constraints.
+     *
+     * @param S3Client $client
+     * @param string $command
+     * @param array $args
+     * @param int $retries
+     * @param array $statusCodes
+     * @return mixed
+     */
+    private static function executeWithRetries(
+        $client,
+        $command,
+        $args,
+        $retries,
+        $statusCodes
+    ) {
+        $attempts = 0;
+
+        while (true) {
+            try {
+                return call_user_func([$client, $command], $args);
+            } catch (S3Exception $e) {
+                if (!in_array($e->getStatusCode(), $statusCodes)
+                    || $attempts >= $retries
+                ) {
+                    throw $e;
+                }
+                $attempts++;
+                sleep(pow(1.2, $attempts));
+            }
+        }
     }
 }

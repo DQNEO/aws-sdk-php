@@ -389,7 +389,8 @@
       "errors":[
         {"shape":"UnauthorizedException"},
         {"shape":"NotFoundException"},
-        {"shape":"TooManyRequestsException"}
+        {"shape":"TooManyRequestsException"},
+        {"shape":"BadRequestException"}
       ]
     },
     "DeleteGatewayResponse":{
@@ -791,6 +792,7 @@
       "output":{"shape":"Deployments"},
       "errors":[
         {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
         {"shape":"UnauthorizedException"},
         {"shape":"TooManyRequestsException"},
         {"shape":"ServiceUnavailableException"}
@@ -1905,7 +1907,8 @@
         "enabled":{"shape":"Boolean"},
         "createdDate":{"shape":"Timestamp"},
         "lastUpdatedDate":{"shape":"Timestamp"},
-        "stageKeys":{"shape":"ListOfString"}
+        "stageKeys":{"shape":"ListOfString"},
+        "tags":{"shape":"MapOfStringToString"}
       }
     },
     "ApiKeyIds":{
@@ -2045,7 +2048,8 @@
         "description":{"shape":"String"},
         "pemEncodedCertificate":{"shape":"String"},
         "createdDate":{"shape":"Timestamp"},
-        "expirationDate":{"shape":"Timestamp"}
+        "expirationDate":{"shape":"Timestamp"},
+        "tags":{"shape":"MapOfStringToString"}
       }
     },
     "ClientCertificates":{
@@ -2089,7 +2093,8 @@
         "generateDistinctId":{"shape":"Boolean"},
         "value":{"shape":"String"},
         "stageKeys":{"shape":"ListOfStageKeys"},
-        "customerId":{"shape":"String"}
+        "customerId":{"shape":"String"},
+        "tags":{"shape":"MapOfStringToString"}
       }
     },
     "CreateAuthorizerRequest":{
@@ -2148,7 +2153,8 @@
         "cacheClusterEnabled":{"shape":"NullableBoolean"},
         "cacheClusterSize":{"shape":"CacheClusterSize"},
         "variables":{"shape":"MapOfStringToString"},
-        "canarySettings":{"shape":"DeploymentCanarySettings"}
+        "canarySettings":{"shape":"DeploymentCanarySettings"},
+        "tracingEnabled":{"shape":"NullableBoolean"}
       }
     },
     "CreateDocumentationPartRequest":{
@@ -2197,7 +2203,10 @@
         "certificateArn":{"shape":"String"},
         "regionalCertificateName":{"shape":"String"},
         "regionalCertificateArn":{"shape":"String"},
-        "endpointConfiguration":{"shape":"EndpointConfiguration"}
+        "endpointConfiguration":{"shape":"EndpointConfiguration"},
+        "tags":{"shape":"MapOfStringToString"},
+        "securityPolicy":{"shape":"SecurityPolicy"},
+        "mutualTlsAuthentication":{"shape":"MutualTlsAuthenticationInput"}
       }
     },
     "CreateModelRequest":{
@@ -2266,7 +2275,9 @@
         "minimumCompressionSize":{"shape":"NullableInteger"},
         "apiKeySource":{"shape":"ApiKeySourceType"},
         "endpointConfiguration":{"shape":"EndpointConfiguration"},
-        "policy":{"shape":"String"}
+        "policy":{"shape":"String"},
+        "tags":{"shape":"MapOfStringToString"},
+        "disableExecuteApiEndpoint":{"shape":"Boolean"}
       }
     },
     "CreateStageRequest":{
@@ -2290,6 +2301,7 @@
         "variables":{"shape":"MapOfStringToString"},
         "documentationVersion":{"shape":"String"},
         "canarySettings":{"shape":"CanarySettings"},
+        "tracingEnabled":{"shape":"Boolean"},
         "tags":{"shape":"MapOfStringToString"}
       }
     },
@@ -2318,7 +2330,8 @@
         "description":{"shape":"String"},
         "apiStages":{"shape":"ListOfApiStage"},
         "throttle":{"shape":"ThrottleSettings"},
-        "quota":{"shape":"QuotaSettings"}
+        "quota":{"shape":"QuotaSettings"},
+        "tags":{"shape":"MapOfStringToString"}
       }
     },
     "CreateVpcLinkRequest":{
@@ -2330,7 +2343,8 @@
       "members":{
         "name":{"shape":"String"},
         "description":{"shape":"String"},
-        "targetArns":{"shape":"ListOfString"}
+        "targetArns":{"shape":"ListOfString"},
+        "tags":{"shape":"MapOfStringToString"}
       }
     },
     "DeleteApiKeyRequest":{
@@ -2835,8 +2849,21 @@
         "regionalCertificateArn":{"shape":"String"},
         "distributionDomainName":{"shape":"String"},
         "distributionHostedZoneId":{"shape":"String"},
-        "endpointConfiguration":{"shape":"EndpointConfiguration"}
+        "endpointConfiguration":{"shape":"EndpointConfiguration"},
+        "domainNameStatus":{"shape":"DomainNameStatus"},
+        "domainNameStatusMessage":{"shape":"String"},
+        "securityPolicy":{"shape":"SecurityPolicy"},
+        "tags":{"shape":"MapOfStringToString"},
+        "mutualTlsAuthentication":{"shape":"MutualTlsAuthentication"}
       }
+    },
+    "DomainNameStatus":{
+      "type":"string",
+      "enum":[
+        "AVAILABLE",
+        "UPDATING",
+        "PENDING"
+      ]
     },
     "DomainNames":{
       "type":"structure",
@@ -2852,7 +2879,8 @@
     "EndpointConfiguration":{
       "type":"structure",
       "members":{
-        "types":{"shape":"ListOfEndpointType"}
+        "types":{"shape":"ListOfEndpointType"},
+        "vpcEndpointIds":{"shape":"ListOfString"}
       }
     },
     "EndpointType":{
@@ -2966,7 +2994,8 @@
     "GenerateClientCertificateRequest":{
       "type":"structure",
       "members":{
-        "description":{"shape":"String"}
+        "description":{"shape":"String"},
+        "tags":{"shape":"MapOfStringToString"}
       }
     },
     "GetAccountRequest":{
@@ -3997,7 +4026,8 @@
         "timeoutInMillis":{"shape":"Integer"},
         "cacheNamespace":{"shape":"String"},
         "cacheKeyParameters":{"shape":"ListOfString"},
-        "integrationResponses":{"shape":"MapOfIntegrationResponse"}
+        "integrationResponses":{"shape":"MapOfIntegrationResponse"},
+        "tlsConfig":{"shape":"TlsConfig"}
       }
     },
     "IntegrationResponse":{
@@ -4154,11 +4184,6 @@
       "key":{"shape":"String"},
       "value":{"shape":"ThrottleSettings"}
     },
-    "MapOfHeaderValues":{
-      "type":"map",
-      "key":{"shape":"String"},
-      "value":{"shape":"String"}
-    },
     "MapOfIntegrationResponse":{
       "type":"map",
       "key":{"shape":"String"},
@@ -4270,6 +4295,21 @@
         }
       }
     },
+    "MutualTlsAuthentication":{
+      "type":"structure",
+      "members":{
+        "truststoreUri":{"shape":"String"},
+        "truststoreVersion":{"shape":"String"},
+        "truststoreWarnings":{"shape":"ListOfString"}
+      }
+    },
+    "MutualTlsAuthenticationInput":{
+      "type":"structure",
+      "members":{
+        "truststoreUri":{"shape":"String"},
+        "truststoreVersion":{"shape":"String"}
+      }
+    },
     "NotFoundException":{
       "type":"structure",
       "members":{
@@ -4367,7 +4407,8 @@
         "cacheNamespace":{"shape":"String"},
         "cacheKeyParameters":{"shape":"ListOfString"},
         "contentHandling":{"shape":"ContentHandlingStrategy"},
-        "timeoutInMillis":{"shape":"NullableInteger"}
+        "timeoutInMillis":{"shape":"NullableInteger"},
+        "tlsConfig":{"shape":"TlsConfig"}
       }
     },
     "PutIntegrationResponseRequest":{
@@ -4577,7 +4618,9 @@
         "minimumCompressionSize":{"shape":"NullableInteger"},
         "apiKeySource":{"shape":"ApiKeySourceType"},
         "endpointConfiguration":{"shape":"EndpointConfiguration"},
-        "policy":{"shape":"String"}
+        "policy":{"shape":"String"},
+        "tags":{"shape":"MapOfStringToString"},
+        "disableExecuteApiEndpoint":{"shape":"Boolean"}
       }
     },
     "RestApis":{
@@ -4636,6 +4679,13 @@
         }
       }
     },
+    "SecurityPolicy":{
+      "type":"string",
+      "enum":[
+        "TLS_1_0",
+        "TLS_1_2"
+      ]
+    },
     "ServiceUnavailableException":{
       "type":"structure",
       "members":{
@@ -4665,6 +4715,8 @@
         "documentationVersion":{"shape":"String"},
         "accessLogSettings":{"shape":"AccessLogSettings"},
         "canarySettings":{"shape":"CanarySettings"},
+        "tracingEnabled":{"shape":"Boolean"},
+        "webAclArn":{"shape":"String"},
         "tags":{"shape":"MapOfStringToString"},
         "createdDate":{"shape":"Timestamp"},
         "lastUpdatedDate":{"shape":"Timestamp"}
@@ -4732,7 +4784,8 @@
           "location":"uri",
           "locationName":"authorizer_id"
         },
-        "headers":{"shape":"MapOfHeaderValues"},
+        "headers":{"shape":"MapOfStringToString"},
+        "multiValueHeaders":{"shape":"MapOfStringToList"},
         "pathWithQueryString":{"shape":"String"},
         "body":{"shape":"String"},
         "stageVariables":{"shape":"MapOfStringToString"},
@@ -4776,7 +4829,8 @@
         },
         "pathWithQueryString":{"shape":"String"},
         "body":{"shape":"String"},
-        "headers":{"shape":"MapOfHeaderValues"},
+        "headers":{"shape":"MapOfStringToString"},
+        "multiValueHeaders":{"shape":"MapOfStringToList"},
         "clientCertificateId":{"shape":"String"},
         "stageVariables":{"shape":"MapOfStringToString"}
       }
@@ -4786,7 +4840,8 @@
       "members":{
         "status":{"shape":"Integer"},
         "body":{"shape":"String"},
-        "headers":{"shape":"MapOfHeaderValues"},
+        "headers":{"shape":"MapOfStringToString"},
+        "multiValueHeaders":{"shape":"MapOfStringToList"},
         "log":{"shape":"String"},
         "latency":{"shape":"Long"}
       }
@@ -4799,6 +4854,12 @@
       }
     },
     "Timestamp":{"type":"timestamp"},
+    "TlsConfig":{
+      "type":"structure",
+      "members":{
+        "insecureSkipVerification":{"shape":"Boolean"}
+      }
+    },
     "TooManyRequestsException":{
       "type":"structure",
       "members":{
@@ -5283,7 +5344,8 @@
         "apiStages":{"shape":"ListOfApiStage"},
         "throttle":{"shape":"ThrottleSettings"},
         "quota":{"shape":"QuotaSettings"},
-        "productCode":{"shape":"String"}
+        "productCode":{"shape":"String"},
+        "tags":{"shape":"MapOfStringToString"}
       }
     },
     "UsagePlanKey":{
@@ -5323,7 +5385,8 @@
         "description":{"shape":"String"},
         "targetArns":{"shape":"ListOfString"},
         "status":{"shape":"VpcLinkStatus"},
-        "statusMessage":{"shape":"String"}
+        "statusMessage":{"shape":"String"},
+        "tags":{"shape":"MapOfStringToString"}
       }
     },
     "VpcLinkStatus":{

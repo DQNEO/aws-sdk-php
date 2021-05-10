@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Test;
+namespace Aws\Test\Endpoint;
 
 use Aws\Endpoint\EndpointProvider;
 use Aws\Endpoint\Partition;
@@ -193,6 +193,28 @@ class PartitionEndpointProviderTest extends TestCase
         $this->assertNull($unknownPartition);
     }
 
+    public function testPassesOptionsToProvider()
+    {
+        $data = json_decode(
+            file_get_contents(__DIR__ . '/fixtures/sts_regional_endpoints.json'),
+            true
+        );
+        $provider = new PartitionEndpointProvider(
+            $data['partitions'],
+            'aws',
+            ['sts_regional_endpoints' => 'regional']
+        );
+        $endpoint = $provider([
+            'service' => 'sts',
+            'region' => 'us-east-1',
+        ]);
+
+        $this->assertSame(
+            'https://sts.us-east-1.amazonaws.com',
+            $endpoint['endpoint']
+        );
+    }
+
     /**
      * @dataProvider knownEndpointProvider
      *
@@ -213,14 +235,22 @@ class PartitionEndpointProviderTest extends TestCase
             'scheme' => 'https',
         ]);
 
-        $this->assertSame("https://$endpoint", $data['endpoint']);
+        if (is_array($endpoint)) {
+            $testArray = [];
+            foreach ($endpoint as $url) {
+                $testArray []= "https://{$url}";
+            }
+            $this->assertContains($data['endpoint'], $testArray);
+        } else {
+            $this->assertSame("https://$endpoint", $data['endpoint']);
+        }
     }
 
     public function testCanMergePrefixData()
     {
         $prefixData = [
             "prefix-groups" => [
-                "ec2" => ["ec2_old", "ec2_deprecated"],
+                "ec2" => ["ec2_old", "ec2_deprecated", "ec2-hyphen"],
                 "s3" => ["s3_old"],
             ],
         ];
@@ -464,7 +494,7 @@ class PartitionEndpointProviderTest extends TestCase
             [$partitions, 'eu-west-1', 'sts', 'sts.amazonaws.com'],
             [$partitions, 'eu-west-1', 'swf', 'swf.eu-west-1.amazonaws.com'],
             [$partitions, 'eu-west-1', 'workspaces', 'workspaces.eu-west-1.amazonaws.com'],
-            [$partitions, 'fips-us-gov-west-1', 's3', 's3-fips-us-gov-west-1.amazonaws.com'],
+            [$partitions, 'fips-us-gov-west-1', 's3', ['s3-fips-us-gov-west-1.amazonaws.com', 's3-fips.us-gov-west-1.amazonaws.com']],
             [$partitions, 'local', 'dynamodb', 'localhost:8000'],
             [$partitions, 's3-external-1', 's3', 's3-external-1.amazonaws.com'],
             [$partitions, 'sa-east-1', 'autoscaling', 'autoscaling.sa-east-1.amazonaws.com'],
@@ -543,7 +573,6 @@ class PartitionEndpointProviderTest extends TestCase
             [$partitions, 'us-east-1', 'support', 'support.us-east-1.amazonaws.com'],
             [$partitions, 'us-east-1', 'swf', 'swf.us-east-1.amazonaws.com'],
             [$partitions, 'us-east-1', 'workspaces', 'workspaces.us-east-1.amazonaws.com'],
-            [$partitions, 'us-east-1', 'waf', 'waf.amazonaws.com'],
             [$partitions, 'us-gov-west-1', 'autoscaling', 'autoscaling.us-gov-west-1.amazonaws.com'],
             [$partitions, 'us-gov-west-1', 'cloudformation', 'cloudformation.us-gov-west-1.amazonaws.com'],
             [$partitions, 'us-gov-west-1', 'cloudhsm', 'cloudhsm.us-gov-west-1.amazonaws.com'],

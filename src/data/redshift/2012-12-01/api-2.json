@@ -32,6 +32,23 @@
         {"shape":"ReservedNodeAlreadyExistsFault"}
       ]
     },
+    "AddPartner":{
+      "name":"AddPartner",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PartnerIntegrationInputMessage"},
+      "output":{
+        "shape":"PartnerIntegrationOutputMessage",
+        "resultWrapper":"AddPartnerResult"
+      },
+      "errors":[
+        {"shape":"PartnerNotFoundFault"},
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"UnauthorizedPartnerIntegrationFault"}
+      ]
+    },
     "AuthorizeClusterSecurityGroupIngress":{
       "name":"AuthorizeClusterSecurityGroupIngress",
       "http":{
@@ -48,6 +65,26 @@
         {"shape":"InvalidClusterSecurityGroupStateFault"},
         {"shape":"AuthorizationAlreadyExistsFault"},
         {"shape":"AuthorizationQuotaExceededFault"}
+      ]
+    },
+    "AuthorizeEndpointAccess":{
+      "name":"AuthorizeEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AuthorizeEndpointAccessMessage"},
+      "output":{
+        "shape":"EndpointAuthorization",
+        "resultWrapper":"AuthorizeEndpointAccessResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"EndpointAuthorizationsPerClusterLimitExceededFault"},
+        {"shape":"UnsupportedOperationFault"},
+        {"shape":"EndpointAuthorizationAlreadyExistsFault"},
+        {"shape":"InvalidAuthorizationStateFault"},
+        {"shape":"InvalidClusterStateFault"}
       ]
     },
     "AuthorizeSnapshotAccess":{
@@ -70,6 +107,55 @@
         {"shape":"LimitExceededFault"}
       ]
     },
+    "BatchDeleteClusterSnapshots":{
+      "name":"BatchDeleteClusterSnapshots",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchDeleteClusterSnapshotsRequest"},
+      "output":{
+        "shape":"BatchDeleteClusterSnapshotsResult",
+        "resultWrapper":"BatchDeleteClusterSnapshotsResult"
+      },
+      "errors":[
+        {"shape":"BatchDeleteRequestSizeExceededFault"}
+      ]
+    },
+    "BatchModifyClusterSnapshots":{
+      "name":"BatchModifyClusterSnapshots",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchModifyClusterSnapshotsMessage"},
+      "output":{
+        "shape":"BatchModifyClusterSnapshotsOutputMessage",
+        "resultWrapper":"BatchModifyClusterSnapshotsResult"
+      },
+      "errors":[
+        {"shape":"InvalidRetentionPeriodFault"},
+        {"shape":"BatchModifyClusterSnapshotsLimitExceededFault"}
+      ]
+    },
+    "CancelResize":{
+      "name":"CancelResize",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CancelResizeMessage"},
+      "output":{
+        "shape":"ResizeProgressMessage",
+        "resultWrapper":"CancelResizeResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"ResizeNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"UnsupportedOperationFault"}
+      ]
+    },
     "CopyClusterSnapshot":{
       "name":"CopyClusterSnapshot",
       "http":{
@@ -85,7 +171,8 @@
         {"shape":"ClusterSnapshotAlreadyExistsFault"},
         {"shape":"ClusterSnapshotNotFoundFault"},
         {"shape":"InvalidClusterSnapshotStateFault"},
-        {"shape":"ClusterSnapshotQuotaExceededFault"}
+        {"shape":"ClusterSnapshotQuotaExceededFault"},
+        {"shape":"InvalidRetentionPeriodFault"}
       ]
     },
     "CreateCluster":{
@@ -119,7 +206,9 @@
         {"shape":"InvalidTagFault"},
         {"shape":"LimitExceededFault"},
         {"shape":"DependentServiceRequestThrottlingFault"},
-        {"shape":"InvalidClusterTrackFault"}
+        {"shape":"InvalidClusterTrackFault"},
+        {"shape":"SnapshotScheduleNotFoundFault"},
+        {"shape":"InvalidRetentionPeriodFault"}
       ]
     },
     "CreateClusterParameterGroup":{
@@ -175,7 +264,8 @@
         {"shape":"ClusterNotFoundFault"},
         {"shape":"ClusterSnapshotQuotaExceededFault"},
         {"shape":"TagLimitExceededFault"},
-        {"shape":"InvalidTagFault"}
+        {"shape":"InvalidTagFault"},
+        {"shape":"InvalidRetentionPeriodFault"}
       ]
     },
     "CreateClusterSubnetGroup":{
@@ -198,6 +288,30 @@
         {"shape":"TagLimitExceededFault"},
         {"shape":"InvalidTagFault"},
         {"shape":"DependentServiceRequestThrottlingFault"}
+      ]
+    },
+    "CreateEndpointAccess":{
+      "name":"CreateEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateEndpointAccessMessage"},
+      "output":{
+        "shape":"EndpointAccess",
+        "resultWrapper":"CreateEndpointAccessResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"AccessToClusterDeniedFault"},
+        {"shape":"EndpointsPerClusterLimitExceededFault"},
+        {"shape":"EndpointsPerAuthorizationLimitExceededFault"},
+        {"shape":"InvalidClusterSecurityGroupStateFault"},
+        {"shape":"ClusterSubnetGroupNotFoundFault"},
+        {"shape":"EndpointAlreadyExistsFault"},
+        {"shape":"UnsupportedOperationFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"UnauthorizedOperation"}
       ]
     },
     "CreateEventSubscription":{
@@ -261,6 +375,26 @@
         {"shape":"InvalidTagFault"}
       ]
     },
+    "CreateScheduledAction":{
+      "name":"CreateScheduledAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateScheduledActionMessage"},
+      "output":{
+        "shape":"ScheduledAction",
+        "resultWrapper":"CreateScheduledActionResult"
+      },
+      "errors":[
+        {"shape":"ScheduledActionAlreadyExistsFault"},
+        {"shape":"ScheduledActionQuotaExceededFault"},
+        {"shape":"ScheduledActionTypeUnsupportedFault"},
+        {"shape":"InvalidScheduleFault"},
+        {"shape":"InvalidScheduledActionFault"},
+        {"shape":"UnauthorizedOperation"}
+      ]
+    },
     "CreateSnapshotCopyGrant":{
       "name":"CreateSnapshotCopyGrant",
       "http":{
@@ -281,6 +415,26 @@
         {"shape":"DependentServiceRequestThrottlingFault"}
       ]
     },
+    "CreateSnapshotSchedule":{
+      "name":"CreateSnapshotSchedule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSnapshotScheduleMessage"},
+      "output":{
+        "shape":"SnapshotSchedule",
+        "resultWrapper":"CreateSnapshotScheduleResult"
+      },
+      "errors":[
+        {"shape":"SnapshotScheduleAlreadyExistsFault"},
+        {"shape":"InvalidScheduleFault"},
+        {"shape":"SnapshotScheduleQuotaExceededFault"},
+        {"shape":"TagLimitExceededFault"},
+        {"shape":"ScheduleDefinitionTypeUnsupportedFault"},
+        {"shape":"InvalidTagFault"}
+      ]
+    },
     "CreateTags":{
       "name":"CreateTags",
       "http":{
@@ -291,7 +445,29 @@
       "errors":[
         {"shape":"TagLimitExceededFault"},
         {"shape":"ResourceNotFoundFault"},
-        {"shape":"InvalidTagFault"}
+        {"shape":"InvalidTagFault"},
+        {"shape":"InvalidClusterStateFault"}
+      ]
+    },
+    "CreateUsageLimit":{
+      "name":"CreateUsageLimit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateUsageLimitMessage"},
+      "output":{
+        "shape":"UsageLimit",
+        "resultWrapper":"CreateUsageLimitResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"LimitExceededFault"},
+        {"shape":"UsageLimitAlreadyExistsFault"},
+        {"shape":"InvalidUsageLimitFault"},
+        {"shape":"TagLimitExceededFault"},
+        {"shape":"UnsupportedOperationFault"}
       ]
     },
     "DeleteCluster":{
@@ -309,7 +485,8 @@
         {"shape":"ClusterNotFoundFault"},
         {"shape":"InvalidClusterStateFault"},
         {"shape":"ClusterSnapshotAlreadyExistsFault"},
-        {"shape":"ClusterSnapshotQuotaExceededFault"}
+        {"shape":"ClusterSnapshotQuotaExceededFault"},
+        {"shape":"InvalidRetentionPeriodFault"}
       ]
     },
     "DeleteClusterParameterGroup":{
@@ -365,6 +542,25 @@
         {"shape":"ClusterSubnetGroupNotFoundFault"}
       ]
     },
+    "DeleteEndpointAccess":{
+      "name":"DeleteEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteEndpointAccessMessage"},
+      "output":{
+        "shape":"EndpointAccess",
+        "resultWrapper":"DeleteEndpointAccessResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidEndpointStateFault"},
+        {"shape":"InvalidClusterSecurityGroupStateFault"},
+        {"shape":"EndpointNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"}
+      ]
+    },
     "DeleteEventSubscription":{
       "name":"DeleteEventSubscription",
       "http":{
@@ -401,6 +597,35 @@
         {"shape":"HsmConfigurationNotFoundFault"}
       ]
     },
+    "DeletePartner":{
+      "name":"DeletePartner",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PartnerIntegrationInputMessage"},
+      "output":{
+        "shape":"PartnerIntegrationOutputMessage",
+        "resultWrapper":"DeletePartnerResult"
+      },
+      "errors":[
+        {"shape":"PartnerNotFoundFault"},
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"UnauthorizedPartnerIntegrationFault"}
+      ]
+    },
+    "DeleteScheduledAction":{
+      "name":"DeleteScheduledAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteScheduledActionMessage"},
+      "errors":[
+        {"shape":"ScheduledActionNotFoundFault"},
+        {"shape":"UnauthorizedOperation"}
+      ]
+    },
     "DeleteSnapshotCopyGrant":{
       "name":"DeleteSnapshotCopyGrant",
       "http":{
@@ -411,6 +636,18 @@
       "errors":[
         {"shape":"InvalidSnapshotCopyGrantStateFault"},
         {"shape":"SnapshotCopyGrantNotFoundFault"}
+      ]
+    },
+    "DeleteSnapshotSchedule":{
+      "name":"DeleteSnapshotSchedule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSnapshotScheduleMessage"},
+      "errors":[
+        {"shape":"InvalidClusterSnapshotScheduleStateFault"},
+        {"shape":"SnapshotScheduleNotFoundFault"}
       ]
     },
     "DeleteTags":{
@@ -425,6 +662,30 @@
         {"shape":"InvalidTagFault"}
       ]
     },
+    "DeleteUsageLimit":{
+      "name":"DeleteUsageLimit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteUsageLimitMessage"},
+      "errors":[
+        {"shape":"UsageLimitNotFoundFault"},
+        {"shape":"UnsupportedOperationFault"}
+      ]
+    },
+    "DescribeAccountAttributes":{
+      "name":"DescribeAccountAttributes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeAccountAttributesMessage"},
+      "output":{
+        "shape":"AccountAttributeList",
+        "resultWrapper":"DescribeAccountAttributesResult"
+      }
+    },
     "DescribeClusterDbRevisions":{
       "name":"DescribeClusterDbRevisions",
       "http":{
@@ -437,7 +698,8 @@
         "resultWrapper":"DescribeClusterDbRevisionsResult"
       },
       "errors":[
-        {"shape":"ClusterNotFoundFault"}
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"}
       ]
     },
     "DescribeClusterParameterGroups":{
@@ -576,6 +838,39 @@
         "resultWrapper":"DescribeDefaultClusterParametersResult"
       }
     },
+    "DescribeEndpointAccess":{
+      "name":"DescribeEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeEndpointAccessMessage"},
+      "output":{
+        "shape":"EndpointAccessList",
+        "resultWrapper":"DescribeEndpointAccessResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"EndpointNotFoundFault"}
+      ]
+    },
+    "DescribeEndpointAuthorization":{
+      "name":"DescribeEndpointAuthorization",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeEndpointAuthorizationMessage"},
+      "output":{
+        "shape":"EndpointAuthorizationList",
+        "resultWrapper":"DescribeEndpointAuthorizationResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"UnsupportedOperationFault"}
+      ]
+    },
     "DescribeEventCategories":{
       "name":"DescribeEventCategories",
       "http":{
@@ -663,6 +958,24 @@
         {"shape":"ClusterNotFoundFault"}
       ]
     },
+    "DescribeNodeConfigurationOptions":{
+      "name":"DescribeNodeConfigurationOptions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeNodeConfigurationOptionsMessage"},
+      "output":{
+        "shape":"NodeConfigurationOptionsMessage",
+        "resultWrapper":"DescribeNodeConfigurationOptionsResult"
+      },
+      "errors":[
+        {"shape":"ClusterSnapshotNotFoundFault"},
+        {"shape":"InvalidClusterSnapshotStateFault"},
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"AccessToSnapshotDeniedFault"}
+      ]
+    },
     "DescribeOrderableClusterOptions":{
       "name":"DescribeOrderableClusterOptions",
       "http":{
@@ -674,6 +987,22 @@
         "shape":"OrderableClusterOptionsMessage",
         "resultWrapper":"DescribeOrderableClusterOptionsResult"
       }
+    },
+    "DescribePartners":{
+      "name":"DescribePartners",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribePartnersInputMessage"},
+      "output":{
+        "shape":"DescribePartnersOutputMessage",
+        "resultWrapper":"DescribePartnersResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"UnauthorizedPartnerIntegrationFault"}
+      ]
     },
     "DescribeReservedNodeOfferings":{
       "name":"DescribeReservedNodeOfferings",
@@ -724,6 +1053,22 @@
         {"shape":"ResizeNotFoundFault"}
       ]
     },
+    "DescribeScheduledActions":{
+      "name":"DescribeScheduledActions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeScheduledActionsMessage"},
+      "output":{
+        "shape":"ScheduledActionsMessage",
+        "resultWrapper":"DescribeScheduledActionsResult"
+      },
+      "errors":[
+        {"shape":"ScheduledActionNotFoundFault"},
+        {"shape":"UnauthorizedOperation"}
+      ]
+    },
     "DescribeSnapshotCopyGrants":{
       "name":"DescribeSnapshotCopyGrants",
       "http":{
@@ -739,6 +1084,29 @@
         {"shape":"SnapshotCopyGrantNotFoundFault"},
         {"shape":"InvalidTagFault"}
       ]
+    },
+    "DescribeSnapshotSchedules":{
+      "name":"DescribeSnapshotSchedules",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeSnapshotSchedulesMessage"},
+      "output":{
+        "shape":"DescribeSnapshotSchedulesOutputMessage",
+        "resultWrapper":"DescribeSnapshotSchedulesResult"
+      }
+    },
+    "DescribeStorage":{
+      "name":"DescribeStorage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "output":{
+        "shape":"CustomerStorageMessage",
+        "resultWrapper":"DescribeStorageResult"
+      }
     },
     "DescribeTableRestoreStatus":{
       "name":"DescribeTableRestoreStatus",
@@ -770,6 +1138,22 @@
       "errors":[
         {"shape":"ResourceNotFoundFault"},
         {"shape":"InvalidTagFault"}
+      ]
+    },
+    "DescribeUsageLimits":{
+      "name":"DescribeUsageLimits",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeUsageLimitsMessage"},
+      "output":{
+        "shape":"UsageLimitList",
+        "resultWrapper":"DescribeUsageLimitsResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"UnsupportedOperationFault"}
       ]
     },
     "DisableLogging":{
@@ -821,7 +1205,8 @@
         {"shape":"BucketNotFoundFault"},
         {"shape":"InsufficientS3BucketPolicyFault"},
         {"shape":"InvalidS3KeyPrefixFault"},
-        {"shape":"InvalidS3BucketNameFault"}
+        {"shape":"InvalidS3BucketNameFault"},
+        {"shape":"InvalidClusterStateFault"}
       ]
     },
     "EnableSnapshotCopy":{
@@ -845,7 +1230,8 @@
         {"shape":"UnauthorizedOperation"},
         {"shape":"SnapshotCopyGrantNotFoundFault"},
         {"shape":"LimitExceededFault"},
-        {"shape":"DependentServiceRequestThrottlingFault"}
+        {"shape":"DependentServiceRequestThrottlingFault"},
+        {"shape":"InvalidRetentionPeriodFault"}
       ]
     },
     "GetClusterCredentials":{
@@ -884,6 +1270,22 @@
         {"shape":"DependentServiceUnavailableFault"}
       ]
     },
+    "ModifyAquaConfiguration":{
+      "name":"ModifyAquaConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyAquaInputMessage"},
+      "output":{
+        "shape":"ModifyAquaOutputMessage",
+        "resultWrapper":"ModifyAquaConfigurationResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"UnsupportedOperationFault"}
+      ]
+    },
     "ModifyCluster":{
       "name":"ModifyCluster",
       "http":{
@@ -913,7 +1315,8 @@
         {"shape":"DependentServiceRequestThrottlingFault"},
         {"shape":"InvalidElasticIpFault"},
         {"shape":"TableLimitExceededFault"},
-        {"shape":"InvalidClusterTrackFault"}
+        {"shape":"InvalidClusterTrackFault"},
+        {"shape":"InvalidRetentionPeriodFault"}
       ]
     },
     "ModifyClusterDbRevision":{
@@ -949,6 +1352,22 @@
         {"shape":"ClusterNotFoundFault"}
       ]
     },
+    "ModifyClusterMaintenance":{
+      "name":"ModifyClusterMaintenance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyClusterMaintenanceMessage"},
+      "output":{
+        "shape":"ModifyClusterMaintenanceResult",
+        "resultWrapper":"ModifyClusterMaintenanceResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"}
+      ]
+    },
     "ModifyClusterParameterGroup":{
       "name":"ModifyClusterParameterGroup",
       "http":{
@@ -963,6 +1382,36 @@
       "errors":[
         {"shape":"ClusterParameterGroupNotFoundFault"},
         {"shape":"InvalidClusterParameterGroupStateFault"}
+      ]
+    },
+    "ModifyClusterSnapshot":{
+      "name":"ModifyClusterSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyClusterSnapshotMessage"},
+      "output":{
+        "shape":"ModifyClusterSnapshotResult",
+        "resultWrapper":"ModifyClusterSnapshotResult"
+      },
+      "errors":[
+        {"shape":"InvalidClusterSnapshotStateFault"},
+        {"shape":"ClusterSnapshotNotFoundFault"},
+        {"shape":"InvalidRetentionPeriodFault"}
+      ]
+    },
+    "ModifyClusterSnapshotSchedule":{
+      "name":"ModifyClusterSnapshotSchedule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyClusterSnapshotScheduleMessage"},
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"SnapshotScheduleNotFoundFault"},
+        {"shape":"InvalidClusterSnapshotScheduleStateFault"}
       ]
     },
     "ModifyClusterSubnetGroup":{
@@ -983,6 +1432,26 @@
         {"shape":"InvalidSubnet"},
         {"shape":"UnauthorizedOperation"},
         {"shape":"DependentServiceRequestThrottlingFault"}
+      ]
+    },
+    "ModifyEndpointAccess":{
+      "name":"ModifyEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyEndpointAccessMessage"},
+      "output":{
+        "shape":"EndpointAccess",
+        "resultWrapper":"ModifyEndpointAccessResult"
+      },
+      "errors":[
+        {"shape":"InvalidClusterSecurityGroupStateFault"},
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidEndpointStateFault"},
+        {"shape":"EndpointNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"UnauthorizedOperation"}
       ]
     },
     "ModifyEventSubscription":{
@@ -1008,6 +1477,25 @@
         {"shape":"InvalidSubscriptionStateFault"}
       ]
     },
+    "ModifyScheduledAction":{
+      "name":"ModifyScheduledAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyScheduledActionMessage"},
+      "output":{
+        "shape":"ScheduledAction",
+        "resultWrapper":"ModifyScheduledActionResult"
+      },
+      "errors":[
+        {"shape":"ScheduledActionNotFoundFault"},
+        {"shape":"ScheduledActionTypeUnsupportedFault"},
+        {"shape":"InvalidScheduleFault"},
+        {"shape":"InvalidScheduledActionFault"},
+        {"shape":"UnauthorizedOperation"}
+      ]
+    },
     "ModifySnapshotCopyRetentionPeriod":{
       "name":"ModifySnapshotCopyRetentionPeriod",
       "http":{
@@ -1023,6 +1511,57 @@
         {"shape":"ClusterNotFoundFault"},
         {"shape":"SnapshotCopyDisabledFault"},
         {"shape":"UnauthorizedOperation"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"InvalidRetentionPeriodFault"}
+      ]
+    },
+    "ModifySnapshotSchedule":{
+      "name":"ModifySnapshotSchedule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifySnapshotScheduleMessage"},
+      "output":{
+        "shape":"SnapshotSchedule",
+        "resultWrapper":"ModifySnapshotScheduleResult"
+      },
+      "errors":[
+        {"shape":"InvalidScheduleFault"},
+        {"shape":"SnapshotScheduleNotFoundFault"},
+        {"shape":"SnapshotScheduleUpdateInProgressFault"}
+      ]
+    },
+    "ModifyUsageLimit":{
+      "name":"ModifyUsageLimit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyUsageLimitMessage"},
+      "output":{
+        "shape":"UsageLimit",
+        "resultWrapper":"ModifyUsageLimitResult"
+      },
+      "errors":[
+        {"shape":"InvalidUsageLimitFault"},
+        {"shape":"UsageLimitNotFoundFault"},
+        {"shape":"UnsupportedOperationFault"}
+      ]
+    },
+    "PauseCluster":{
+      "name":"PauseCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PauseClusterMessage"},
+      "output":{
+        "shape":"PauseClusterResult",
+        "resultWrapper":"PauseClusterResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
         {"shape":"InvalidClusterStateFault"}
       ]
     },
@@ -1132,7 +1671,10 @@
         {"shape":"ClusterSecurityGroupNotFoundFault"},
         {"shape":"LimitExceededFault"},
         {"shape":"DependentServiceRequestThrottlingFault"},
-        {"shape":"InvalidClusterTrackFault"}
+        {"shape":"InvalidClusterTrackFault"},
+        {"shape":"SnapshotScheduleNotFoundFault"},
+        {"shape":"TagLimitExceededFault"},
+        {"shape":"InvalidTagFault"}
       ]
     },
     "RestoreTableFromClusterSnapshot":{
@@ -1156,6 +1698,23 @@
         {"shape":"UnsupportedOperationFault"}
       ]
     },
+    "ResumeCluster":{
+      "name":"ResumeCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ResumeClusterMessage"},
+      "output":{
+        "shape":"ResumeClusterResult",
+        "resultWrapper":"ResumeClusterResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"InsufficientClusterCapacityFault"}
+      ]
+    },
     "RevokeClusterSecurityGroupIngress":{
       "name":"RevokeClusterSecurityGroupIngress",
       "http":{
@@ -1171,6 +1730,27 @@
         {"shape":"ClusterSecurityGroupNotFoundFault"},
         {"shape":"AuthorizationNotFoundFault"},
         {"shape":"InvalidClusterSecurityGroupStateFault"}
+      ]
+    },
+    "RevokeEndpointAccess":{
+      "name":"RevokeEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RevokeEndpointAccessMessage"},
+      "output":{
+        "shape":"EndpointAuthorization",
+        "resultWrapper":"RevokeEndpointAccessResult"
+      },
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidEndpointStateFault"},
+        {"shape":"InvalidClusterSecurityGroupStateFault"},
+        {"shape":"EndpointNotFoundFault"},
+        {"shape":"EndpointAuthorizationNotFoundFault"},
+        {"shape":"InvalidAuthorizationStateFault"},
+        {"shape":"InvalidClusterStateFault"}
       ]
     },
     "RevokeSnapshotAccess":{
@@ -1206,6 +1786,23 @@
         {"shape":"InvalidClusterStateFault"},
         {"shape":"DependentServiceRequestThrottlingFault"}
       ]
+    },
+    "UpdatePartnerStatus":{
+      "name":"UpdatePartnerStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdatePartnerStatusInputMessage"},
+      "output":{
+        "shape":"PartnerIntegrationOutputMessage",
+        "resultWrapper":"UpdatePartnerStatusResult"
+      },
+      "errors":[
+        {"shape":"PartnerNotFoundFault"},
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"UnauthorizedPartnerIntegrationFault"}
+      ]
     }
   },
   "shapes":{
@@ -1226,6 +1823,17 @@
         "ExchangedReservedNode":{"shape":"ReservedNode"}
       }
     },
+    "AccessToClusterDeniedFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"AccessToClusterDenied",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
     "AccessToSnapshotDeniedFault":{
       "type":"structure",
       "members":{
@@ -1236,6 +1844,19 @@
         "senderFault":true
       },
       "exception":true
+    },
+    "AccountAttribute":{
+      "type":"structure",
+      "members":{
+        "AttributeName":{"shape":"String"},
+        "AttributeValues":{"shape":"AttributeValueList"}
+      }
+    },
+    "AccountAttributeList":{
+      "type":"structure",
+      "members":{
+        "AccountAttributes":{"shape":"AttributeList"}
+      }
     },
     "AccountWithRestoreAccess":{
       "type":"structure",
@@ -1249,6 +1870,71 @@
       "member":{
         "shape":"AccountWithRestoreAccess",
         "locationName":"AccountWithRestoreAccess"
+      }
+    },
+    "ActionType":{
+      "type":"string",
+      "enum":[
+        "restore-cluster",
+        "recommend-node-config",
+        "resize-cluster"
+      ]
+    },
+    "AquaConfiguration":{
+      "type":"structure",
+      "members":{
+        "AquaStatus":{"shape":"AquaStatus"},
+        "AquaConfigurationStatus":{"shape":"AquaConfigurationStatus"}
+      }
+    },
+    "AquaConfigurationStatus":{
+      "type":"string",
+      "enum":[
+        "enabled",
+        "disabled",
+        "auto"
+      ]
+    },
+    "AquaStatus":{
+      "type":"string",
+      "enum":[
+        "enabled",
+        "disabled",
+        "applying"
+      ]
+    },
+    "AssociatedClusterList":{
+      "type":"list",
+      "member":{
+        "shape":"ClusterAssociatedToSchedule",
+        "locationName":"ClusterAssociatedToSchedule"
+      }
+    },
+    "AttributeList":{
+      "type":"list",
+      "member":{
+        "shape":"AccountAttribute",
+        "locationName":"AccountAttribute"
+      }
+    },
+    "AttributeNameList":{
+      "type":"list",
+      "member":{
+        "shape":"String",
+        "locationName":"AttributeName"
+      }
+    },
+    "AttributeValueList":{
+      "type":"list",
+      "member":{
+        "shape":"AttributeValueTarget",
+        "locationName":"AttributeValueTarget"
+      }
+    },
+    "AttributeValueTarget":{
+      "type":"structure",
+      "members":{
+        "AttributeValue":{"shape":"String"}
       }
     },
     "AuthorizationAlreadyExistsFault":{
@@ -1284,6 +1970,13 @@
       },
       "exception":true
     },
+    "AuthorizationStatus":{
+      "type":"string",
+      "enum":[
+        "Authorized",
+        "Revoking"
+      ]
+    },
     "AuthorizeClusterSecurityGroupIngressMessage":{
       "type":"structure",
       "required":["ClusterSecurityGroupName"],
@@ -1298,6 +1991,15 @@
       "type":"structure",
       "members":{
         "ClusterSecurityGroup":{"shape":"ClusterSecurityGroup"}
+      }
+    },
+    "AuthorizeEndpointAccessMessage":{
+      "type":"structure",
+      "required":["Account"],
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "Account":{"shape":"String"},
+        "VpcIds":{"shape":"VpcIdentifierList"}
       }
     },
     "AuthorizeSnapshotAccessMessage":{
@@ -1333,6 +2035,72 @@
         "locationName":"AvailabilityZone"
       }
     },
+    "BatchDeleteClusterSnapshotsRequest":{
+      "type":"structure",
+      "required":["Identifiers"],
+      "members":{
+        "Identifiers":{"shape":"DeleteClusterSnapshotMessageList"}
+      }
+    },
+    "BatchDeleteClusterSnapshotsResult":{
+      "type":"structure",
+      "members":{
+        "Resources":{"shape":"SnapshotIdentifierList"},
+        "Errors":{"shape":"BatchSnapshotOperationErrorList"}
+      }
+    },
+    "BatchDeleteRequestSizeExceededFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"BatchDeleteRequestSizeExceeded",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "BatchModifyClusterSnapshotsLimitExceededFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"BatchModifyClusterSnapshotsLimitExceededFault",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "BatchModifyClusterSnapshotsMessage":{
+      "type":"structure",
+      "required":["SnapshotIdentifierList"],
+      "members":{
+        "SnapshotIdentifierList":{"shape":"SnapshotIdentifierList"},
+        "ManualSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
+        "Force":{"shape":"Boolean"}
+      }
+    },
+    "BatchModifyClusterSnapshotsOutputMessage":{
+      "type":"structure",
+      "members":{
+        "Resources":{"shape":"SnapshotIdentifierList"},
+        "Errors":{"shape":"BatchSnapshotOperationErrors"}
+      }
+    },
+    "BatchSnapshotOperationErrorList":{
+      "type":"list",
+      "member":{
+        "shape":"SnapshotErrorMessage",
+        "locationName":"SnapshotErrorMessage"
+      }
+    },
+    "BatchSnapshotOperationErrors":{
+      "type":"list",
+      "member":{
+        "shape":"SnapshotErrorMessage",
+        "locationName":"SnapshotErrorMessage"
+      }
+    },
     "Boolean":{"type":"boolean"},
     "BooleanOptional":{"type":"boolean"},
     "BucketNotFoundFault":{
@@ -1346,18 +2114,27 @@
       },
       "exception":true
     },
+    "CancelResizeMessage":{
+      "type":"structure",
+      "required":["ClusterIdentifier"],
+      "members":{
+        "ClusterIdentifier":{"shape":"String"}
+      }
+    },
     "Cluster":{
       "type":"structure",
       "members":{
         "ClusterIdentifier":{"shape":"String"},
         "NodeType":{"shape":"String"},
         "ClusterStatus":{"shape":"String"},
+        "ClusterAvailabilityStatus":{"shape":"String"},
         "ModifyStatus":{"shape":"String"},
         "MasterUsername":{"shape":"String"},
         "DBName":{"shape":"String"},
         "Endpoint":{"shape":"Endpoint"},
         "ClusterCreateTime":{"shape":"TStamp"},
         "AutomatedSnapshotRetentionPeriod":{"shape":"Integer"},
+        "ManualSnapshotRetentionPeriod":{"shape":"Integer"},
         "ClusterSecurityGroups":{"shape":"ClusterSecurityGroupMembershipList"},
         "VpcSecurityGroups":{"shape":"VpcSecurityGroupMembershipList"},
         "ClusterParameterGroups":{"shape":"ClusterParameterGroupStatusList"},
@@ -1372,6 +2149,7 @@
         "PubliclyAccessible":{"shape":"Boolean"},
         "Encrypted":{"shape":"Boolean"},
         "RestoreStatus":{"shape":"RestoreStatus"},
+        "DataTransferProgress":{"shape":"DataTransferProgress"},
         "HsmStatus":{"shape":"HsmStatus"},
         "ClusterSnapshotCopyStatus":{"shape":"ClusterSnapshotCopyStatus"},
         "ClusterPublicKey":{"shape":"String"},
@@ -1384,7 +2162,18 @@
         "IamRoles":{"shape":"ClusterIamRoleList"},
         "PendingActions":{"shape":"PendingActionsList"},
         "MaintenanceTrackName":{"shape":"String"},
-        "ElasticResizeNumberOfNodeOptions":{"shape":"String"}
+        "ElasticResizeNumberOfNodeOptions":{"shape":"String"},
+        "DeferredMaintenanceWindows":{"shape":"DeferredMaintenanceWindowsList"},
+        "SnapshotScheduleIdentifier":{"shape":"String"},
+        "SnapshotScheduleState":{"shape":"ScheduleState"},
+        "ExpectedNextSnapshotScheduleTime":{"shape":"TStamp"},
+        "ExpectedNextSnapshotScheduleTimeStatus":{"shape":"String"},
+        "NextMaintenanceWindowStartTime":{"shape":"TStamp"},
+        "ResizeInfo":{"shape":"ResizeInfo"},
+        "AvailabilityZoneRelocationStatus":{"shape":"String"},
+        "ClusterNamespaceArn":{"shape":"String"},
+        "TotalStorageCapacityInMegaBytes":{"shape":"LongOptional"},
+        "AquaConfiguration":{"shape":"AquaConfiguration"}
       },
       "wrapper":true
     },
@@ -1398,6 +2187,13 @@
         "senderFault":true
       },
       "exception":true
+    },
+    "ClusterAssociatedToSchedule":{
+      "type":"structure",
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "ScheduleAssociationState":{"shape":"ScheduleState"}
+      }
     },
     "ClusterCredentials":{
       "type":"structure",
@@ -1682,6 +2478,7 @@
       "members":{
         "DestinationRegion":{"shape":"String"},
         "RetentionPeriod":{"shape":"Long"},
+        "ManualSnapshotRetentionPeriod":{"shape":"Integer"},
         "SnapshotCopyGrantName":{"shape":"String"}
       }
     },
@@ -1815,7 +2612,8 @@
       "members":{
         "SourceSnapshotIdentifier":{"shape":"String"},
         "SourceSnapshotClusterIdentifier":{"shape":"String"},
-        "TargetSnapshotIdentifier":{"shape":"String"}
+        "TargetSnapshotIdentifier":{"shape":"String"},
+        "ManualSnapshotRetentionPeriod":{"shape":"IntegerOptional"}
       }
     },
     "CopyClusterSnapshotResult":{
@@ -1857,6 +2655,7 @@
         "PreferredMaintenanceWindow":{"shape":"String"},
         "ClusterParameterGroupName":{"shape":"String"},
         "AutomatedSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
+        "ManualSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
         "Port":{"shape":"IntegerOptional"},
         "ClusterVersion":{"shape":"String"},
         "AllowVersionUpgrade":{"shape":"BooleanOptional"},
@@ -1871,7 +2670,10 @@
         "EnhancedVpcRouting":{"shape":"BooleanOptional"},
         "AdditionalInfo":{"shape":"String"},
         "IamRoles":{"shape":"IamRoleArnList"},
-        "MaintenanceTrackName":{"shape":"String"}
+        "MaintenanceTrackName":{"shape":"String"},
+        "SnapshotScheduleIdentifier":{"shape":"String"},
+        "AvailabilityZoneRelocation":{"shape":"BooleanOptional"},
+        "AquaConfigurationStatus":{"shape":"AquaConfigurationStatus"}
       }
     },
     "CreateClusterParameterGroupMessage":{
@@ -1927,6 +2729,7 @@
       "members":{
         "SnapshotIdentifier":{"shape":"String"},
         "ClusterIdentifier":{"shape":"String"},
+        "ManualSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
         "Tags":{"shape":"TagList"}
       }
     },
@@ -1954,6 +2757,20 @@
       "type":"structure",
       "members":{
         "ClusterSubnetGroup":{"shape":"ClusterSubnetGroup"}
+      }
+    },
+    "CreateEndpointAccessMessage":{
+      "type":"structure",
+      "required":[
+        "EndpointName",
+        "SubnetGroupName"
+      ],
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "ResourceOwner":{"shape":"String"},
+        "EndpointName":{"shape":"String"},
+        "SubnetGroupName":{"shape":"String"},
+        "VpcSecurityGroupIds":{"shape":"VpcSecurityGroupIdList"}
       }
     },
     "CreateEventSubscriptionMessage":{
@@ -2019,6 +2836,25 @@
         "HsmConfiguration":{"shape":"HsmConfiguration"}
       }
     },
+    "CreateScheduledActionMessage":{
+      "type":"structure",
+      "required":[
+        "ScheduledActionName",
+        "TargetAction",
+        "Schedule",
+        "IamRole"
+      ],
+      "members":{
+        "ScheduledActionName":{"shape":"String"},
+        "TargetAction":{"shape":"ScheduledActionType"},
+        "Schedule":{"shape":"String"},
+        "IamRole":{"shape":"String"},
+        "ScheduledActionDescription":{"shape":"String"},
+        "StartTime":{"shape":"TStamp"},
+        "EndTime":{"shape":"TStamp"},
+        "Enable":{"shape":"BooleanOptional"}
+      }
+    },
     "CreateSnapshotCopyGrantMessage":{
       "type":"structure",
       "required":["SnapshotCopyGrantName"],
@@ -2034,6 +2870,17 @@
         "SnapshotCopyGrant":{"shape":"SnapshotCopyGrant"}
       }
     },
+    "CreateSnapshotScheduleMessage":{
+      "type":"structure",
+      "members":{
+        "ScheduleDefinitions":{"shape":"ScheduleDefinitionList"},
+        "ScheduleIdentifier":{"shape":"String"},
+        "ScheduleDescription":{"shape":"String"},
+        "Tags":{"shape":"TagList"},
+        "DryRun":{"shape":"BooleanOptional"},
+        "NextInvocations":{"shape":"IntegerOptional"}
+      }
+    },
     "CreateTagsMessage":{
       "type":"structure",
       "required":[
@@ -2043,6 +2890,42 @@
       "members":{
         "ResourceName":{"shape":"String"},
         "Tags":{"shape":"TagList"}
+      }
+    },
+    "CreateUsageLimitMessage":{
+      "type":"structure",
+      "required":[
+        "ClusterIdentifier",
+        "FeatureType",
+        "LimitType",
+        "Amount"
+      ],
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "FeatureType":{"shape":"UsageLimitFeatureType"},
+        "LimitType":{"shape":"UsageLimitLimitType"},
+        "Amount":{"shape":"Long"},
+        "Period":{"shape":"UsageLimitPeriod"},
+        "BreachAction":{"shape":"UsageLimitBreachAction"},
+        "Tags":{"shape":"TagList"}
+      }
+    },
+    "CustomerStorageMessage":{
+      "type":"structure",
+      "members":{
+        "TotalBackupSizeInMegaBytes":{"shape":"Double"},
+        "TotalProvisionedStorageInMegaBytes":{"shape":"Double"}
+      }
+    },
+    "DataTransferProgress":{
+      "type":"structure",
+      "members":{
+        "Status":{"shape":"String"},
+        "CurrentRateInMegaBytesPerSecond":{"shape":"DoubleOptional"},
+        "TotalDataInMegaBytes":{"shape":"Long"},
+        "DataTransferredInMegaBytes":{"shape":"Long"},
+        "EstimatedTimeToCompletionInSeconds":{"shape":"LongOptional"},
+        "ElapsedTimeInSeconds":{"shape":"LongOptional"}
       }
     },
     "DbGroupList":{
@@ -2061,13 +2944,29 @@
       },
       "wrapper":true
     },
+    "DeferredMaintenanceWindow":{
+      "type":"structure",
+      "members":{
+        "DeferMaintenanceIdentifier":{"shape":"String"},
+        "DeferMaintenanceStartTime":{"shape":"TStamp"},
+        "DeferMaintenanceEndTime":{"shape":"TStamp"}
+      }
+    },
+    "DeferredMaintenanceWindowsList":{
+      "type":"list",
+      "member":{
+        "shape":"DeferredMaintenanceWindow",
+        "locationName":"DeferredMaintenanceWindow"
+      }
+    },
     "DeleteClusterMessage":{
       "type":"structure",
       "required":["ClusterIdentifier"],
       "members":{
         "ClusterIdentifier":{"shape":"String"},
         "SkipFinalClusterSnapshot":{"shape":"Boolean"},
-        "FinalClusterSnapshotIdentifier":{"shape":"String"}
+        "FinalClusterSnapshotIdentifier":{"shape":"String"},
+        "FinalClusterSnapshotRetentionPeriod":{"shape":"IntegerOptional"}
       }
     },
     "DeleteClusterParameterGroupMessage":{
@@ -2098,6 +2997,13 @@
         "SnapshotClusterIdentifier":{"shape":"String"}
       }
     },
+    "DeleteClusterSnapshotMessageList":{
+      "type":"list",
+      "member":{
+        "shape":"DeleteClusterSnapshotMessage",
+        "locationName":"DeleteClusterSnapshotMessage"
+      }
+    },
     "DeleteClusterSnapshotResult":{
       "type":"structure",
       "members":{
@@ -2109,6 +3015,13 @@
       "required":["ClusterSubnetGroupName"],
       "members":{
         "ClusterSubnetGroupName":{"shape":"String"}
+      }
+    },
+    "DeleteEndpointAccessMessage":{
+      "type":"structure",
+      "required":["EndpointName"],
+      "members":{
+        "EndpointName":{"shape":"String"}
       }
     },
     "DeleteEventSubscriptionMessage":{
@@ -2132,11 +3045,25 @@
         "HsmConfigurationIdentifier":{"shape":"String"}
       }
     },
+    "DeleteScheduledActionMessage":{
+      "type":"structure",
+      "required":["ScheduledActionName"],
+      "members":{
+        "ScheduledActionName":{"shape":"String"}
+      }
+    },
     "DeleteSnapshotCopyGrantMessage":{
       "type":"structure",
       "required":["SnapshotCopyGrantName"],
       "members":{
         "SnapshotCopyGrantName":{"shape":"String"}
+      }
+    },
+    "DeleteSnapshotScheduleMessage":{
+      "type":"structure",
+      "required":["ScheduleIdentifier"],
+      "members":{
+        "ScheduleIdentifier":{"shape":"String"}
       }
     },
     "DeleteTagsMessage":{
@@ -2148,6 +3075,13 @@
       "members":{
         "ResourceName":{"shape":"String"},
         "TagKeys":{"shape":"TagKeyList"}
+      }
+    },
+    "DeleteUsageLimitMessage":{
+      "type":"structure",
+      "required":["UsageLimitId"],
+      "members":{
+        "UsageLimitId":{"shape":"String"}
       }
     },
     "DependentServiceRequestThrottlingFault":{
@@ -2171,6 +3105,12 @@
         "senderFault":true
       },
       "exception":true
+    },
+    "DescribeAccountAttributesMessage":{
+      "type":"structure",
+      "members":{
+        "AttributeNames":{"shape":"AttributeNameList"}
+      }
     },
     "DescribeClusterDbRevisionsMessage":{
       "type":"structure",
@@ -2223,7 +3163,8 @@
         "OwnerAccount":{"shape":"String"},
         "TagKeys":{"shape":"TagKeyList"},
         "TagValues":{"shape":"TagValueList"},
-        "ClusterExists":{"shape":"BooleanOptional"}
+        "ClusterExists":{"shape":"BooleanOptional"},
+        "SortingEntities":{"shape":"SnapshotSortingEntityList"}
       }
     },
     "DescribeClusterSubnetGroupsMessage":{
@@ -2276,6 +3217,27 @@
       "type":"structure",
       "members":{
         "DefaultClusterParameters":{"shape":"DefaultClusterParameters"}
+      }
+    },
+    "DescribeEndpointAccessMessage":{
+      "type":"structure",
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "ResourceOwner":{"shape":"String"},
+        "EndpointName":{"shape":"String"},
+        "VpcId":{"shape":"String"},
+        "MaxRecords":{"shape":"IntegerOptional"},
+        "Marker":{"shape":"String"}
+      }
+    },
+    "DescribeEndpointAuthorizationMessage":{
+      "type":"structure",
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "Account":{"shape":"String"},
+        "Grantee":{"shape":"BooleanOptional"},
+        "MaxRecords":{"shape":"IntegerOptional"},
+        "Marker":{"shape":"String"}
       }
     },
     "DescribeEventCategoriesMessage":{
@@ -2333,6 +3295,22 @@
         "ClusterIdentifier":{"shape":"String"}
       }
     },
+    "DescribeNodeConfigurationOptionsMessage":{
+      "type":"structure",
+      "required":["ActionType"],
+      "members":{
+        "ActionType":{"shape":"ActionType"},
+        "ClusterIdentifier":{"shape":"String"},
+        "SnapshotIdentifier":{"shape":"String"},
+        "OwnerAccount":{"shape":"String"},
+        "Filters":{
+          "shape":"NodeConfigurationOptionsFilterList",
+          "locationName":"Filter"
+        },
+        "Marker":{"shape":"String"},
+        "MaxRecords":{"shape":"IntegerOptional"}
+      }
+    },
     "DescribeOrderableClusterOptionsMessage":{
       "type":"structure",
       "members":{
@@ -2340,6 +3318,25 @@
         "NodeType":{"shape":"String"},
         "MaxRecords":{"shape":"IntegerOptional"},
         "Marker":{"shape":"String"}
+      }
+    },
+    "DescribePartnersInputMessage":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "ClusterIdentifier"
+      ],
+      "members":{
+        "AccountId":{"shape":"PartnerIntegrationAccountId"},
+        "ClusterIdentifier":{"shape":"PartnerIntegrationClusterIdentifier"},
+        "DatabaseName":{"shape":"PartnerIntegrationDatabaseName"},
+        "PartnerName":{"shape":"PartnerIntegrationPartnerName"}
+      }
+    },
+    "DescribePartnersOutputMessage":{
+      "type":"structure",
+      "members":{
+        "PartnerIntegrationInfoList":{"shape":"PartnerIntegrationInfoList"}
       }
     },
     "DescribeReservedNodeOfferingsMessage":{
@@ -2365,6 +3362,19 @@
         "ClusterIdentifier":{"shape":"String"}
       }
     },
+    "DescribeScheduledActionsMessage":{
+      "type":"structure",
+      "members":{
+        "ScheduledActionName":{"shape":"String"},
+        "TargetActionType":{"shape":"ScheduledActionTypeValues"},
+        "StartTime":{"shape":"TStamp"},
+        "EndTime":{"shape":"TStamp"},
+        "Active":{"shape":"BooleanOptional"},
+        "Filters":{"shape":"ScheduledActionFilterList"},
+        "Marker":{"shape":"String"},
+        "MaxRecords":{"shape":"IntegerOptional"}
+      }
+    },
     "DescribeSnapshotCopyGrantsMessage":{
       "type":"structure",
       "members":{
@@ -2373,6 +3383,24 @@
         "Marker":{"shape":"String"},
         "TagKeys":{"shape":"TagKeyList"},
         "TagValues":{"shape":"TagValueList"}
+      }
+    },
+    "DescribeSnapshotSchedulesMessage":{
+      "type":"structure",
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "ScheduleIdentifier":{"shape":"String"},
+        "TagKeys":{"shape":"TagKeyList"},
+        "TagValues":{"shape":"TagValueList"},
+        "Marker":{"shape":"String"},
+        "MaxRecords":{"shape":"IntegerOptional"}
+      }
+    },
+    "DescribeSnapshotSchedulesOutputMessage":{
+      "type":"structure",
+      "members":{
+        "SnapshotSchedules":{"shape":"SnapshotScheduleList"},
+        "Marker":{"shape":"String"}
       }
     },
     "DescribeTableRestoreStatusMessage":{
@@ -2389,6 +3417,18 @@
       "members":{
         "ResourceName":{"shape":"String"},
         "ResourceType":{"shape":"String"},
+        "MaxRecords":{"shape":"IntegerOptional"},
+        "Marker":{"shape":"String"},
+        "TagKeys":{"shape":"TagKeyList"},
+        "TagValues":{"shape":"TagValueList"}
+      }
+    },
+    "DescribeUsageLimitsMessage":{
+      "type":"structure",
+      "members":{
+        "UsageLimitId":{"shape":"String"},
+        "ClusterIdentifier":{"shape":"String"},
+        "FeatureType":{"shape":"UsageLimitFeatureType"},
         "MaxRecords":{"shape":"IntegerOptional"},
         "Marker":{"shape":"String"},
         "TagKeys":{"shape":"TagKeyList"},
@@ -2469,7 +3509,8 @@
         "ClusterIdentifier":{"shape":"String"},
         "DestinationRegion":{"shape":"String"},
         "RetentionPeriod":{"shape":"IntegerOptional"},
-        "SnapshotCopyGrantName":{"shape":"String"}
+        "SnapshotCopyGrantName":{"shape":"String"},
+        "ManualSnapshotRetentionPeriod":{"shape":"IntegerOptional"}
       }
     },
     "EnableSnapshotCopyResult":{
@@ -2482,8 +3523,137 @@
       "type":"structure",
       "members":{
         "Address":{"shape":"String"},
-        "Port":{"shape":"Integer"}
+        "Port":{"shape":"Integer"},
+        "VpcEndpoints":{"shape":"VpcEndpointsList"}
       }
+    },
+    "EndpointAccess":{
+      "type":"structure",
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "ResourceOwner":{"shape":"String"},
+        "SubnetGroupName":{"shape":"String"},
+        "EndpointStatus":{"shape":"String"},
+        "EndpointName":{"shape":"String"},
+        "EndpointCreateTime":{"shape":"TStamp"},
+        "Port":{"shape":"Integer"},
+        "Address":{"shape":"String"},
+        "VpcSecurityGroups":{"shape":"VpcSecurityGroupMembershipList"},
+        "VpcEndpoint":{"shape":"VpcEndpoint"}
+      }
+    },
+    "EndpointAccessList":{
+      "type":"structure",
+      "members":{
+        "EndpointAccessList":{"shape":"EndpointAccesses"},
+        "Marker":{"shape":"String"}
+      }
+    },
+    "EndpointAccesses":{
+      "type":"list",
+      "member":{"shape":"EndpointAccess"}
+    },
+    "EndpointAlreadyExistsFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"EndpointAlreadyExists",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "EndpointAuthorization":{
+      "type":"structure",
+      "members":{
+        "Grantor":{"shape":"String"},
+        "Grantee":{"shape":"String"},
+        "ClusterIdentifier":{"shape":"String"},
+        "AuthorizeTime":{"shape":"TStamp"},
+        "ClusterStatus":{"shape":"String"},
+        "Status":{"shape":"AuthorizationStatus"},
+        "AllowedAllVPCs":{"shape":"Boolean"},
+        "AllowedVPCs":{"shape":"VpcIdentifierList"},
+        "EndpointCount":{"shape":"Integer"}
+      }
+    },
+    "EndpointAuthorizationAlreadyExistsFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"EndpointAuthorizationAlreadyExists",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "EndpointAuthorizationList":{
+      "type":"structure",
+      "members":{
+        "EndpointAuthorizationList":{"shape":"EndpointAuthorizations"},
+        "Marker":{"shape":"String"}
+      }
+    },
+    "EndpointAuthorizationNotFoundFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"EndpointAuthorizationNotFound",
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "EndpointAuthorizations":{
+      "type":"list",
+      "member":{"shape":"EndpointAuthorization"}
+    },
+    "EndpointAuthorizationsPerClusterLimitExceededFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"EndpointAuthorizationsPerClusterLimitExceeded",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "EndpointNotFoundFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"EndpointNotFound",
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "EndpointsPerAuthorizationLimitExceededFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"EndpointsPerAuthorizationLimitExceeded",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "EndpointsPerClusterLimitExceededFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"EndpointsPerClusterLimitExceeded",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
     },
     "Event":{
       "type":"structure",
@@ -2831,6 +4001,17 @@
     },
     "Integer":{"type":"integer"},
     "IntegerOptional":{"type":"integer"},
+    "InvalidAuthorizationStateFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidAuthorizationState",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
     "InvalidClusterParameterGroupStateFault":{
       "type":"structure",
       "members":{
@@ -2848,6 +4029,17 @@
       },
       "error":{
         "code":"InvalidClusterSecurityGroupState",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "InvalidClusterSnapshotScheduleStateFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidClusterSnapshotScheduleState",
         "httpStatusCode":400,
         "senderFault":true
       },
@@ -2919,6 +4111,17 @@
       },
       "exception":true
     },
+    "InvalidEndpointStateFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidEndpointState",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
     "InvalidHsmClientCertificateStateFault":{
       "type":"structure",
       "members":{
@@ -2963,6 +4166,17 @@
       },
       "exception":true
     },
+    "InvalidRetentionPeriodFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidRetentionPeriodFault",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
     "InvalidS3BucketNameFault":{
       "type":"structure",
       "members":{
@@ -2980,6 +4194,28 @@
       },
       "error":{
         "code":"InvalidS3KeyPrefixFault",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "InvalidScheduleFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidSchedule",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "InvalidScheduledActionFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidScheduledAction",
         "httpStatusCode":400,
         "senderFault":true
       },
@@ -3040,6 +4276,17 @@
       },
       "exception":true
     },
+    "InvalidUsageLimitFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidUsageLimit",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
     "InvalidVPCNetworkStateFault":{
       "type":"structure",
       "members":{
@@ -3083,6 +4330,27 @@
         "UpdateTargets":{"shape":"EligibleTracksToUpdateList"}
       }
     },
+    "Mode":{
+      "type":"string",
+      "enum":[
+        "standard",
+        "high-performance"
+      ]
+    },
+    "ModifyAquaInputMessage":{
+      "type":"structure",
+      "required":["ClusterIdentifier"],
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "AquaConfigurationStatus":{"shape":"AquaConfigurationStatus"}
+      }
+    },
+    "ModifyAquaOutputMessage":{
+      "type":"structure",
+      "members":{
+        "AquaConfiguration":{"shape":"AquaConfiguration"}
+      }
+    },
     "ModifyClusterDbRevisionMessage":{
       "type":"structure",
       "required":[
@@ -3115,6 +4383,24 @@
         "Cluster":{"shape":"Cluster"}
       }
     },
+    "ModifyClusterMaintenanceMessage":{
+      "type":"structure",
+      "required":["ClusterIdentifier"],
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "DeferMaintenance":{"shape":"BooleanOptional"},
+        "DeferMaintenanceIdentifier":{"shape":"String"},
+        "DeferMaintenanceStartTime":{"shape":"TStamp"},
+        "DeferMaintenanceEndTime":{"shape":"TStamp"},
+        "DeferMaintenanceDuration":{"shape":"IntegerOptional"}
+      }
+    },
+    "ModifyClusterMaintenanceResult":{
+      "type":"structure",
+      "members":{
+        "Cluster":{"shape":"Cluster"}
+      }
+    },
     "ModifyClusterMessage":{
       "type":"structure",
       "required":["ClusterIdentifier"],
@@ -3128,6 +4414,7 @@
         "MasterUserPassword":{"shape":"String"},
         "ClusterParameterGroupName":{"shape":"String"},
         "AutomatedSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
+        "ManualSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
         "PreferredMaintenanceWindow":{"shape":"String"},
         "ClusterVersion":{"shape":"String"},
         "AllowVersionUpgrade":{"shape":"BooleanOptional"},
@@ -3137,7 +4424,12 @@
         "PubliclyAccessible":{"shape":"BooleanOptional"},
         "ElasticIp":{"shape":"String"},
         "EnhancedVpcRouting":{"shape":"BooleanOptional"},
-        "MaintenanceTrackName":{"shape":"String"}
+        "MaintenanceTrackName":{"shape":"String"},
+        "Encrypted":{"shape":"BooleanOptional"},
+        "KmsKeyId":{"shape":"String"},
+        "AvailabilityZoneRelocation":{"shape":"BooleanOptional"},
+        "AvailabilityZone":{"shape":"String"},
+        "Port":{"shape":"IntegerOptional"}
       }
     },
     "ModifyClusterParameterGroupMessage":{
@@ -3157,6 +4449,30 @@
         "Cluster":{"shape":"Cluster"}
       }
     },
+    "ModifyClusterSnapshotMessage":{
+      "type":"structure",
+      "required":["SnapshotIdentifier"],
+      "members":{
+        "SnapshotIdentifier":{"shape":"String"},
+        "ManualSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
+        "Force":{"shape":"Boolean"}
+      }
+    },
+    "ModifyClusterSnapshotResult":{
+      "type":"structure",
+      "members":{
+        "Snapshot":{"shape":"Snapshot"}
+      }
+    },
+    "ModifyClusterSnapshotScheduleMessage":{
+      "type":"structure",
+      "required":["ClusterIdentifier"],
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "ScheduleIdentifier":{"shape":"String"},
+        "DisassociateSchedule":{"shape":"BooleanOptional"}
+      }
+    },
     "ModifyClusterSubnetGroupMessage":{
       "type":"structure",
       "required":[
@@ -3173,6 +4489,14 @@
       "type":"structure",
       "members":{
         "ClusterSubnetGroup":{"shape":"ClusterSubnetGroup"}
+      }
+    },
+    "ModifyEndpointAccessMessage":{
+      "type":"structure",
+      "required":["EndpointName"],
+      "members":{
+        "EndpointName":{"shape":"String"},
+        "VpcSecurityGroupIds":{"shape":"VpcSecurityGroupIdList"}
       }
     },
     "ModifyEventSubscriptionMessage":{
@@ -3194,6 +4518,20 @@
         "EventSubscription":{"shape":"EventSubscription"}
       }
     },
+    "ModifyScheduledActionMessage":{
+      "type":"structure",
+      "required":["ScheduledActionName"],
+      "members":{
+        "ScheduledActionName":{"shape":"String"},
+        "TargetAction":{"shape":"ScheduledActionType"},
+        "Schedule":{"shape":"String"},
+        "IamRole":{"shape":"String"},
+        "ScheduledActionDescription":{"shape":"String"},
+        "StartTime":{"shape":"TStamp"},
+        "EndTime":{"shape":"TStamp"},
+        "Enable":{"shape":"BooleanOptional"}
+      }
+    },
     "ModifySnapshotCopyRetentionPeriodMessage":{
       "type":"structure",
       "required":[
@@ -3202,13 +4540,100 @@
       ],
       "members":{
         "ClusterIdentifier":{"shape":"String"},
-        "RetentionPeriod":{"shape":"Integer"}
+        "RetentionPeriod":{"shape":"Integer"},
+        "Manual":{"shape":"Boolean"}
       }
     },
     "ModifySnapshotCopyRetentionPeriodResult":{
       "type":"structure",
       "members":{
         "Cluster":{"shape":"Cluster"}
+      }
+    },
+    "ModifySnapshotScheduleMessage":{
+      "type":"structure",
+      "required":[
+        "ScheduleIdentifier",
+        "ScheduleDefinitions"
+      ],
+      "members":{
+        "ScheduleIdentifier":{"shape":"String"},
+        "ScheduleDefinitions":{"shape":"ScheduleDefinitionList"}
+      }
+    },
+    "ModifyUsageLimitMessage":{
+      "type":"structure",
+      "required":["UsageLimitId"],
+      "members":{
+        "UsageLimitId":{"shape":"String"},
+        "Amount":{"shape":"LongOptional"},
+        "BreachAction":{"shape":"UsageLimitBreachAction"}
+      }
+    },
+    "NetworkInterface":{
+      "type":"structure",
+      "members":{
+        "NetworkInterfaceId":{"shape":"String"},
+        "SubnetId":{"shape":"String"},
+        "PrivateIpAddress":{"shape":"String"},
+        "AvailabilityZone":{"shape":"String"}
+      }
+    },
+    "NetworkInterfaceList":{
+      "type":"list",
+      "member":{
+        "shape":"NetworkInterface",
+        "locationName":"NetworkInterface"
+      }
+    },
+    "NodeConfigurationOption":{
+      "type":"structure",
+      "members":{
+        "NodeType":{"shape":"String"},
+        "NumberOfNodes":{"shape":"Integer"},
+        "EstimatedDiskUtilizationPercent":{"shape":"DoubleOptional"},
+        "Mode":{"shape":"Mode"}
+      }
+    },
+    "NodeConfigurationOptionList":{
+      "type":"list",
+      "member":{
+        "shape":"NodeConfigurationOption",
+        "locationName":"NodeConfigurationOption"
+      }
+    },
+    "NodeConfigurationOptionsFilter":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"NodeConfigurationOptionsFilterName"},
+        "Operator":{"shape":"OperatorType"},
+        "Values":{
+          "shape":"ValueStringList",
+          "locationName":"Value"
+        }
+      }
+    },
+    "NodeConfigurationOptionsFilterList":{
+      "type":"list",
+      "member":{
+        "shape":"NodeConfigurationOptionsFilter",
+        "locationName":"NodeConfigurationOptionsFilter"
+      }
+    },
+    "NodeConfigurationOptionsFilterName":{
+      "type":"string",
+      "enum":[
+        "NodeType",
+        "NumberOfNodes",
+        "EstimatedDiskUtilizationPercent",
+        "Mode"
+      ]
+    },
+    "NodeConfigurationOptionsMessage":{
+      "type":"structure",
+      "members":{
+        "NodeConfigurationOptionList":{"shape":"NodeConfigurationOptionList"},
+        "Marker":{"shape":"String"}
       }
     },
     "NumberOfNodesPerClusterLimitExceededFault":{
@@ -3232,6 +4657,18 @@
         "senderFault":true
       },
       "exception":true
+    },
+    "OperatorType":{
+      "type":"string",
+      "enum":[
+        "eq",
+        "lt",
+        "gt",
+        "le",
+        "ge",
+        "in",
+        "between"
+      ]
     },
     "OrderableClusterOption":{
       "type":"structure",
@@ -3292,6 +4729,105 @@
         "locationName":"Parameter"
       }
     },
+    "PartnerIntegrationAccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^[0-9]+$"
+    },
+    "PartnerIntegrationClusterIdentifier":{
+      "type":"string",
+      "max":63,
+      "pattern":"^[a-zA-Z0-9\\-]+$"
+    },
+    "PartnerIntegrationDatabaseName":{
+      "type":"string",
+      "max":127,
+      "pattern":"^[\\p{L}_][\\p{L}\\p{N}@$#_]+$"
+    },
+    "PartnerIntegrationInfo":{
+      "type":"structure",
+      "members":{
+        "DatabaseName":{"shape":"PartnerIntegrationDatabaseName"},
+        "PartnerName":{"shape":"PartnerIntegrationPartnerName"},
+        "Status":{"shape":"PartnerIntegrationStatus"},
+        "StatusMessage":{"shape":"PartnerIntegrationStatusMessage"},
+        "CreatedAt":{"shape":"TStamp"},
+        "UpdatedAt":{"shape":"TStamp"}
+      }
+    },
+    "PartnerIntegrationInfoList":{
+      "type":"list",
+      "member":{
+        "shape":"PartnerIntegrationInfo",
+        "locationName":"PartnerIntegrationInfo"
+      }
+    },
+    "PartnerIntegrationInputMessage":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "ClusterIdentifier",
+        "DatabaseName",
+        "PartnerName"
+      ],
+      "members":{
+        "AccountId":{"shape":"PartnerIntegrationAccountId"},
+        "ClusterIdentifier":{"shape":"PartnerIntegrationClusterIdentifier"},
+        "DatabaseName":{"shape":"PartnerIntegrationDatabaseName"},
+        "PartnerName":{"shape":"PartnerIntegrationPartnerName"}
+      }
+    },
+    "PartnerIntegrationOutputMessage":{
+      "type":"structure",
+      "members":{
+        "DatabaseName":{"shape":"PartnerIntegrationDatabaseName"},
+        "PartnerName":{"shape":"PartnerIntegrationPartnerName"}
+      }
+    },
+    "PartnerIntegrationPartnerName":{
+      "type":"string",
+      "max":255,
+      "pattern":"^[a-zA-Z0-9\\-_]+$"
+    },
+    "PartnerIntegrationStatus":{
+      "type":"string",
+      "enum":[
+        "Active",
+        "Inactive",
+        "RuntimeFailure",
+        "ConnectionFailure"
+      ]
+    },
+    "PartnerIntegrationStatusMessage":{
+      "type":"string",
+      "max":262144,
+      "pattern":"^[\\x20-\\x7E]+$"
+    },
+    "PartnerNotFoundFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"PartnerNotFound",
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "PauseClusterMessage":{
+      "type":"structure",
+      "required":["ClusterIdentifier"],
+      "members":{
+        "ClusterIdentifier":{"shape":"String"}
+      }
+    },
+    "PauseClusterResult":{
+      "type":"structure",
+      "members":{
+        "Cluster":{"shape":"Cluster"}
+      }
+    },
     "PendingActionsList":{
       "type":"list",
       "member":{"shape":"String"}
@@ -3308,7 +4844,8 @@
         "ClusterIdentifier":{"shape":"String"},
         "PubliclyAccessible":{"shape":"BooleanOptional"},
         "EnhancedVpcRouting":{"shape":"BooleanOptional"},
-        "MaintenanceTrackName":{"shape":"String"}
+        "MaintenanceTrackName":{"shape":"String"},
+        "EncryptionType":{"shape":"String"}
       }
     },
     "PurchaseReservedNodeOfferingMessage":{
@@ -3488,15 +5025,12 @@
     },
     "ResizeClusterMessage":{
       "type":"structure",
-      "required":[
-        "ClusterIdentifier",
-        "NumberOfNodes"
-      ],
+      "required":["ClusterIdentifier"],
       "members":{
         "ClusterIdentifier":{"shape":"String"},
         "ClusterType":{"shape":"String"},
         "NodeType":{"shape":"String"},
-        "NumberOfNodes":{"shape":"Integer"},
+        "NumberOfNodes":{"shape":"IntegerOptional"},
         "Classic":{"shape":"BooleanOptional"}
       }
     },
@@ -3504,6 +5038,13 @@
       "type":"structure",
       "members":{
         "Cluster":{"shape":"Cluster"}
+      }
+    },
+    "ResizeInfo":{
+      "type":"structure",
+      "members":{
+        "ResizeType":{"shape":"String"},
+        "AllowCancelResize":{"shape":"Boolean"}
       }
     },
     "ResizeNotFoundFault":{
@@ -3533,7 +5074,9 @@
         "ElapsedTimeInSeconds":{"shape":"LongOptional"},
         "EstimatedTimeToCompletionInSeconds":{"shape":"LongOptional"},
         "ResizeType":{"shape":"String"},
-        "Message":{"shape":"String"}
+        "Message":{"shape":"String"},
+        "TargetEncryptionType":{"shape":"String"},
+        "DataTransferProgressPercent":{"shape":"DoubleOptional"}
       }
     },
     "ResourceNotFoundFault":{
@@ -3578,12 +5121,17 @@
         "VpcSecurityGroupIds":{"shape":"VpcSecurityGroupIdList"},
         "PreferredMaintenanceWindow":{"shape":"String"},
         "AutomatedSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
+        "ManualSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
         "KmsKeyId":{"shape":"String"},
         "NodeType":{"shape":"String"},
         "EnhancedVpcRouting":{"shape":"BooleanOptional"},
         "AdditionalInfo":{"shape":"String"},
         "IamRoles":{"shape":"IamRoleArnList"},
-        "MaintenanceTrackName":{"shape":"String"}
+        "MaintenanceTrackName":{"shape":"String"},
+        "SnapshotScheduleIdentifier":{"shape":"String"},
+        "NumberOfNodes":{"shape":"IntegerOptional"},
+        "AvailabilityZoneRelocation":{"shape":"BooleanOptional"},
+        "AquaConfigurationStatus":{"shape":"AquaConfigurationStatus"}
       }
     },
     "RestoreFromClusterSnapshotResult":{
@@ -3620,13 +5168,27 @@
         "SourceTableName":{"shape":"String"},
         "TargetDatabaseName":{"shape":"String"},
         "TargetSchemaName":{"shape":"String"},
-        "NewTableName":{"shape":"String"}
+        "NewTableName":{"shape":"String"},
+        "EnableCaseSensitiveIdentifier":{"shape":"BooleanOptional"}
       }
     },
     "RestoreTableFromClusterSnapshotResult":{
       "type":"structure",
       "members":{
         "TableRestoreStatus":{"shape":"TableRestoreStatus"}
+      }
+    },
+    "ResumeClusterMessage":{
+      "type":"structure",
+      "required":["ClusterIdentifier"],
+      "members":{
+        "ClusterIdentifier":{"shape":"String"}
+      }
+    },
+    "ResumeClusterResult":{
+      "type":"structure",
+      "members":{
+        "Cluster":{"shape":"Cluster"}
       }
     },
     "RevisionTarget":{
@@ -3658,6 +5220,15 @@
       "type":"structure",
       "members":{
         "ClusterSecurityGroup":{"shape":"ClusterSecurityGroup"}
+      }
+    },
+    "RevokeEndpointAccessMessage":{
+      "type":"structure",
+      "members":{
+        "ClusterIdentifier":{"shape":"String"},
+        "Account":{"shape":"String"},
+        "VpcIds":{"shape":"VpcIdentifierList"},
+        "Force":{"shape":"Boolean"}
       }
     },
     "RevokeSnapshotAccessMessage":{
@@ -3724,6 +5295,166 @@
       },
       "exception":true
     },
+    "ScheduleDefinitionList":{
+      "type":"list",
+      "member":{
+        "shape":"String",
+        "locationName":"ScheduleDefinition"
+      }
+    },
+    "ScheduleDefinitionTypeUnsupportedFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ScheduleDefinitionTypeUnsupported",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ScheduleState":{
+      "type":"string",
+      "enum":[
+        "MODIFYING",
+        "ACTIVE",
+        "FAILED"
+      ]
+    },
+    "ScheduledAction":{
+      "type":"structure",
+      "members":{
+        "ScheduledActionName":{"shape":"String"},
+        "TargetAction":{"shape":"ScheduledActionType"},
+        "Schedule":{"shape":"String"},
+        "IamRole":{"shape":"String"},
+        "ScheduledActionDescription":{"shape":"String"},
+        "State":{"shape":"ScheduledActionState"},
+        "NextInvocations":{"shape":"ScheduledActionTimeList"},
+        "StartTime":{"shape":"TStamp"},
+        "EndTime":{"shape":"TStamp"}
+      }
+    },
+    "ScheduledActionAlreadyExistsFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ScheduledActionAlreadyExists",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ScheduledActionFilter":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Values"
+      ],
+      "members":{
+        "Name":{"shape":"ScheduledActionFilterName"},
+        "Values":{"shape":"ValueStringList"}
+      }
+    },
+    "ScheduledActionFilterList":{
+      "type":"list",
+      "member":{
+        "shape":"ScheduledActionFilter",
+        "locationName":"ScheduledActionFilter"
+      }
+    },
+    "ScheduledActionFilterName":{
+      "type":"string",
+      "enum":[
+        "cluster-identifier",
+        "iam-role"
+      ]
+    },
+    "ScheduledActionList":{
+      "type":"list",
+      "member":{
+        "shape":"ScheduledAction",
+        "locationName":"ScheduledAction"
+      }
+    },
+    "ScheduledActionNotFoundFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ScheduledActionNotFound",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ScheduledActionQuotaExceededFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ScheduledActionQuotaExceeded",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ScheduledActionState":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "DISABLED"
+      ]
+    },
+    "ScheduledActionTimeList":{
+      "type":"list",
+      "member":{
+        "shape":"TStamp",
+        "locationName":"ScheduledActionTime"
+      }
+    },
+    "ScheduledActionType":{
+      "type":"structure",
+      "members":{
+        "ResizeCluster":{"shape":"ResizeClusterMessage"},
+        "PauseCluster":{"shape":"PauseClusterMessage"},
+        "ResumeCluster":{"shape":"ResumeClusterMessage"}
+      }
+    },
+    "ScheduledActionTypeUnsupportedFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ScheduledActionTypeUnsupported",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ScheduledActionTypeValues":{
+      "type":"string",
+      "enum":[
+        "ResizeCluster",
+        "PauseCluster",
+        "ResumeCluster"
+      ]
+    },
+    "ScheduledActionsMessage":{
+      "type":"structure",
+      "members":{
+        "Marker":{"shape":"String"},
+        "ScheduledActions":{"shape":"ScheduledActionList"}
+      }
+    },
+    "ScheduledSnapshotTimeList":{
+      "type":"list",
+      "member":{
+        "shape":"TStamp",
+        "locationName":"SnapshotTime"
+      }
+    },
     "SensitiveString":{
       "type":"string",
       "sensitive":true
@@ -3740,6 +5471,7 @@
         "ClusterCreateTime":{"shape":"TStamp"},
         "MasterUsername":{"shape":"String"},
         "ClusterVersion":{"shape":"String"},
+        "EngineFullVersion":{"shape":"String"},
         "SnapshotType":{"shape":"String"},
         "NodeType":{"shape":"String"},
         "NumberOfNodes":{"shape":"Integer"},
@@ -3760,9 +5492,20 @@
         "Tags":{"shape":"TagList"},
         "RestorableNodeTypes":{"shape":"RestorableNodeTypeList"},
         "EnhancedVpcRouting":{"shape":"Boolean"},
-        "MaintenanceTrackName":{"shape":"String"}
+        "MaintenanceTrackName":{"shape":"String"},
+        "ManualSnapshotRetentionPeriod":{"shape":"IntegerOptional"},
+        "ManualSnapshotRemainingDays":{"shape":"IntegerOptional"},
+        "SnapshotRetentionStartTime":{"shape":"TStamp"}
       },
       "wrapper":true
+    },
+    "SnapshotAttributeToSortBy":{
+      "type":"string",
+      "enum":[
+        "SOURCE_TYPE",
+        "TOTAL_SIZE",
+        "CREATE_TIME"
+      ]
     },
     "SnapshotCopyAlreadyDisabledFault":{
       "type":"structure",
@@ -3853,6 +5596,22 @@
       },
       "exception":true
     },
+    "SnapshotErrorMessage":{
+      "type":"structure",
+      "members":{
+        "SnapshotIdentifier":{"shape":"String"},
+        "SnapshotClusterIdentifier":{"shape":"String"},
+        "FailureCode":{"shape":"String"},
+        "FailureReason":{"shape":"String"}
+      }
+    },
+    "SnapshotIdentifierList":{
+      "type":"list",
+      "member":{
+        "shape":"String",
+        "locationName":"String"
+      }
+    },
     "SnapshotList":{
       "type":"list",
       "member":{
@@ -3866,6 +5625,91 @@
         "Marker":{"shape":"String"},
         "Snapshots":{"shape":"SnapshotList"}
       }
+    },
+    "SnapshotSchedule":{
+      "type":"structure",
+      "members":{
+        "ScheduleDefinitions":{"shape":"ScheduleDefinitionList"},
+        "ScheduleIdentifier":{"shape":"String"},
+        "ScheduleDescription":{"shape":"String"},
+        "Tags":{"shape":"TagList"},
+        "NextInvocations":{"shape":"ScheduledSnapshotTimeList"},
+        "AssociatedClusterCount":{"shape":"IntegerOptional"},
+        "AssociatedClusters":{"shape":"AssociatedClusterList"}
+      }
+    },
+    "SnapshotScheduleAlreadyExistsFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"SnapshotScheduleAlreadyExists",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SnapshotScheduleList":{
+      "type":"list",
+      "member":{
+        "shape":"SnapshotSchedule",
+        "locationName":"SnapshotSchedule"
+      }
+    },
+    "SnapshotScheduleNotFoundFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"SnapshotScheduleNotFound",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SnapshotScheduleQuotaExceededFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"SnapshotScheduleQuotaExceeded",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SnapshotScheduleUpdateInProgressFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"SnapshotScheduleUpdateInProgress",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SnapshotSortingEntity":{
+      "type":"structure",
+      "required":["Attribute"],
+      "members":{
+        "Attribute":{"shape":"SnapshotAttributeToSortBy"},
+        "SortOrder":{"shape":"SortByOrder"}
+      }
+    },
+    "SnapshotSortingEntityList":{
+      "type":"list",
+      "member":{
+        "shape":"SnapshotSortingEntity",
+        "locationName":"SnapshotSortingEntity"
+      }
+    },
+    "SortByOrder":{
+      "type":"string",
+      "enum":[
+        "ASC",
+        "DESC"
+      ]
     },
     "SourceIdsList":{
       "type":"list",
@@ -3891,10 +5735,14 @@
         "cluster",
         "cluster-parameter-group",
         "cluster-security-group",
-        "cluster-snapshot"
+        "cluster-snapshot",
+        "scheduled-action"
       ]
     },
-    "String":{"type":"string"},
+    "String":{
+      "type":"string",
+      "max":2147483647
+    },
     "Subnet":{
       "type":"structure",
       "members":{
@@ -3982,6 +5830,19 @@
         "senderFault":true
       },
       "exception":true
+    },
+    "SupportedOperation":{
+      "type":"structure",
+      "members":{
+        "OperationName":{"shape":"String"}
+      }
+    },
+    "SupportedOperationList":{
+      "type":"list",
+      "member":{
+        "shape":"SupportedOperation",
+        "locationName":"SupportedOperation"
+      }
     },
     "SupportedPlatform":{
       "type":"structure",
@@ -4150,6 +6011,17 @@
       },
       "exception":true
     },
+    "UnauthorizedPartnerIntegrationFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"UnauthorizedPartnerIntegration",
+        "httpStatusCode":401,
+        "senderFault":true
+      },
+      "exception":true
+    },
     "UnknownSnapshotCopyRegionFault":{
       "type":"structure",
       "members":{
@@ -4183,11 +6055,135 @@
       },
       "exception":true
     },
+    "UpdatePartnerStatusInputMessage":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "ClusterIdentifier",
+        "DatabaseName",
+        "PartnerName",
+        "Status"
+      ],
+      "members":{
+        "AccountId":{"shape":"PartnerIntegrationAccountId"},
+        "ClusterIdentifier":{"shape":"PartnerIntegrationClusterIdentifier"},
+        "DatabaseName":{"shape":"PartnerIntegrationDatabaseName"},
+        "PartnerName":{"shape":"PartnerIntegrationPartnerName"},
+        "Status":{"shape":"PartnerIntegrationStatus"},
+        "StatusMessage":{"shape":"PartnerIntegrationStatusMessage"}
+      }
+    },
     "UpdateTarget":{
       "type":"structure",
       "members":{
         "MaintenanceTrackName":{"shape":"String"},
-        "DatabaseVersion":{"shape":"String"}
+        "DatabaseVersion":{"shape":"String"},
+        "SupportedOperations":{"shape":"SupportedOperationList"}
+      }
+    },
+    "UsageLimit":{
+      "type":"structure",
+      "members":{
+        "UsageLimitId":{"shape":"String"},
+        "ClusterIdentifier":{"shape":"String"},
+        "FeatureType":{"shape":"UsageLimitFeatureType"},
+        "LimitType":{"shape":"UsageLimitLimitType"},
+        "Amount":{"shape":"Long"},
+        "Period":{"shape":"UsageLimitPeriod"},
+        "BreachAction":{"shape":"UsageLimitBreachAction"},
+        "Tags":{"shape":"TagList"}
+      }
+    },
+    "UsageLimitAlreadyExistsFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"UsageLimitAlreadyExists",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UsageLimitBreachAction":{
+      "type":"string",
+      "enum":[
+        "log",
+        "emit-metric",
+        "disable"
+      ]
+    },
+    "UsageLimitFeatureType":{
+      "type":"string",
+      "enum":[
+        "spectrum",
+        "concurrency-scaling"
+      ]
+    },
+    "UsageLimitLimitType":{
+      "type":"string",
+      "enum":[
+        "time",
+        "data-scanned"
+      ]
+    },
+    "UsageLimitList":{
+      "type":"structure",
+      "members":{
+        "UsageLimits":{"shape":"UsageLimits"},
+        "Marker":{"shape":"String"}
+      }
+    },
+    "UsageLimitNotFoundFault":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"UsageLimitNotFound",
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UsageLimitPeriod":{
+      "type":"string",
+      "enum":[
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "UsageLimits":{
+      "type":"list",
+      "member":{"shape":"UsageLimit"}
+    },
+    "ValueStringList":{
+      "type":"list",
+      "member":{
+        "shape":"String",
+        "locationName":"item"
+      }
+    },
+    "VpcEndpoint":{
+      "type":"structure",
+      "members":{
+        "VpcEndpointId":{"shape":"String"},
+        "VpcId":{"shape":"String"},
+        "NetworkInterfaces":{"shape":"NetworkInterfaceList"}
+      }
+    },
+    "VpcEndpointsList":{
+      "type":"list",
+      "member":{
+        "shape":"VpcEndpoint",
+        "locationName":"VpcEndpoint"
+      }
+    },
+    "VpcIdentifierList":{
+      "type":"list",
+      "member":{
+        "shape":"String",
+        "locationName":"VpcIdentifier"
       }
     },
     "VpcSecurityGroupIdList":{

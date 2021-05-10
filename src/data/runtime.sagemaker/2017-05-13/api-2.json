@@ -31,7 +31,13 @@
   "shapes":{
     "BodyBlob":{
       "type":"blob",
-      "max":5242880,
+      "max":6291456,
+      "sensitive":true
+    },
+    "CustomAttributesHeader":{
+      "type":"string",
+      "max":1024,
+      "pattern":"\\p{ASCII}*",
       "sensitive":true
     },
     "EndpointName":{
@@ -41,7 +47,14 @@
     },
     "Header":{
       "type":"string",
-      "max":1024
+      "max":1024,
+      "pattern":"\\p{ASCII}*"
+    },
+    "InferenceId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"\\A\\S[\\p{Print}]*\\z"
     },
     "InternalFailure":{
       "type":"structure",
@@ -50,7 +63,8 @@
       },
       "error":{"httpStatusCode":500},
       "exception":true,
-      "fault":true
+      "fault":true,
+      "synthetic":true
     },
     "InvokeEndpointInput":{
       "type":"structure",
@@ -74,6 +88,31 @@
           "shape":"Header",
           "location":"header",
           "locationName":"Accept"
+        },
+        "CustomAttributes":{
+          "shape":"CustomAttributesHeader",
+          "location":"header",
+          "locationName":"X-Amzn-SageMaker-Custom-Attributes"
+        },
+        "TargetModel":{
+          "shape":"TargetModelHeader",
+          "location":"header",
+          "locationName":"X-Amzn-SageMaker-Target-Model"
+        },
+        "TargetVariant":{
+          "shape":"TargetVariantHeader",
+          "location":"header",
+          "locationName":"X-Amzn-SageMaker-Target-Variant"
+        },
+        "TargetContainerHostname":{
+          "shape":"TargetContainerHostnameHeader",
+          "location":"header",
+          "locationName":"X-Amzn-SageMaker-Target-Container-Hostname"
+        },
+        "InferenceId":{
+          "shape":"InferenceId",
+          "location":"header",
+          "locationName":"X-Amzn-SageMaker-Inference-Id"
         }
       },
       "payload":"Body"
@@ -92,6 +131,11 @@
           "shape":"Header",
           "location":"header",
           "locationName":"x-Amzn-Invoked-Production-Variant"
+        },
+        "CustomAttributes":{
+          "shape":"CustomAttributesHeader",
+          "location":"header",
+          "locationName":"X-Amzn-SageMaker-Custom-Attributes"
         }
       },
       "payload":"Body"
@@ -119,16 +163,34 @@
       },
       "error":{"httpStatusCode":503},
       "exception":true,
-      "fault":true
+      "fault":true,
+      "synthetic":true
     },
     "StatusCode":{"type":"integer"},
+    "TargetContainerHostnameHeader":{
+      "type":"string",
+      "max":63,
+      "pattern":"^[a-zA-Z0-9](-*[a-zA-Z0-9])*"
+    },
+    "TargetModelHeader":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"\\A\\S[\\p{Print}]*\\z"
+    },
+    "TargetVariantHeader":{
+      "type":"string",
+      "max":63,
+      "pattern":"^[a-zA-Z0-9](-*[a-zA-Z0-9])*"
+    },
     "ValidationError":{
       "type":"structure",
       "members":{
         "Message":{"shape":"Message"}
       },
       "error":{"httpStatusCode":400},
-      "exception":true
+      "exception":true,
+      "synthetic":true
     }
   }
 }

@@ -85,6 +85,34 @@
         {"shape":"Ec2RequestFailedException"}
       ]
     },
+    "CreateLongTermPricing":{
+      "name":"CreateLongTermPricing",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLongTermPricingRequest"},
+      "output":{"shape":"CreateLongTermPricingResult"},
+      "errors":[
+        {"shape":"InvalidResourceException"}
+      ]
+    },
+    "CreateReturnShippingLabel":{
+      "name":"CreateReturnShippingLabel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateReturnShippingLabelRequest"},
+      "output":{"shape":"CreateReturnShippingLabelResult"},
+      "errors":[
+        {"shape":"InvalidResourceException"},
+        {"shape":"InvalidJobStateException"},
+        {"shape":"InvalidInputCombinationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ReturnShippingLabelAlreadyExistsException"}
+      ]
+    },
     "DescribeAddress":{
       "name":"DescribeAddress",
       "http":{
@@ -134,6 +162,20 @@
         {"shape":"InvalidResourceException"}
       ]
     },
+    "DescribeReturnShippingLabel":{
+      "name":"DescribeReturnShippingLabel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeReturnShippingLabelRequest"},
+      "output":{"shape":"DescribeReturnShippingLabelResult"},
+      "errors":[
+        {"shape":"InvalidResourceException"},
+        {"shape":"InvalidJobStateException"},
+        {"shape":"ConflictException"}
+      ]
+    },
     "GetJobManifest":{
       "name":"GetJobManifest",
       "http":{
@@ -168,6 +210,19 @@
       },
       "input":{"shape":"GetSnowballUsageRequest"},
       "output":{"shape":"GetSnowballUsageResult"}
+    },
+    "GetSoftwareUpdates":{
+      "name":"GetSoftwareUpdates",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetSoftwareUpdatesRequest"},
+      "output":{"shape":"GetSoftwareUpdatesResult"},
+      "errors":[
+        {"shape":"InvalidResourceException"},
+        {"shape":"InvalidJobStateException"}
+      ]
     },
     "ListClusterJobs":{
       "name":"ListClusterJobs",
@@ -219,6 +274,19 @@
         {"shape":"InvalidNextTokenException"}
       ]
     },
+    "ListLongTermPricing":{
+      "name":"ListLongTermPricing",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLongTermPricingRequest"},
+      "output":{"shape":"ListLongTermPricingResult"},
+      "errors":[
+        {"shape":"InvalidResourceException"},
+        {"shape":"InvalidNextTokenException"}
+      ]
+    },
     "UpdateCluster":{
       "name":"UpdateCluster",
       "http":{
@@ -250,6 +318,31 @@
         {"shape":"InvalidInputCombinationException"},
         {"shape":"ClusterLimitExceededException"},
         {"shape":"Ec2RequestFailedException"}
+      ]
+    },
+    "UpdateJobShipmentState":{
+      "name":"UpdateJobShipmentState",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateJobShipmentStateRequest"},
+      "output":{"shape":"UpdateJobShipmentStateResult"},
+      "errors":[
+        {"shape":"InvalidResourceException"},
+        {"shape":"InvalidJobStateException"}
+      ]
+    },
+    "UpdateLongTermPricing":{
+      "name":"UpdateLongTermPricing",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateLongTermPricingRequest"},
+      "output":{"shape":"UpdateLongTermPricingResult"},
+      "errors":[
+        {"shape":"InvalidResourceException"}
       ]
     }
   },
@@ -355,7 +448,8 @@
         "AddressId":{"shape":"AddressId"},
         "ShippingOption":{"shape":"ShippingOption"},
         "Notification":{"shape":"Notification"},
-        "ForwardingAddressId":{"shape":"AddressId"}
+        "ForwardingAddressId":{"shape":"AddressId"},
+        "TaxDocuments":{"shape":"TaxDocuments"}
       }
     },
     "ClusterState":{
@@ -379,6 +473,14 @@
       "type":"list",
       "member":{"shape":"CompatibleImage"}
     },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "ConflictResource":{"shape":"String"},
+        "Message":{"shape":"String"}
+      },
+      "exception":true
+    },
     "CreateAddressRequest":{
       "type":"structure",
       "required":["Address"],
@@ -399,6 +501,7 @@
         "Resources",
         "AddressId",
         "RoleARN",
+        "SnowballType",
         "ShippingOption"
       ],
       "members":{
@@ -411,7 +514,8 @@
         "SnowballType":{"shape":"SnowballType"},
         "ShippingOption":{"shape":"ShippingOption"},
         "Notification":{"shape":"Notification"},
-        "ForwardingAddressId":{"shape":"AddressId"}
+        "ForwardingAddressId":{"shape":"AddressId"},
+        "TaxDocuments":{"shape":"TaxDocuments"}
       }
     },
     "CreateClusterResult":{
@@ -434,13 +538,45 @@
         "Notification":{"shape":"Notification"},
         "ClusterId":{"shape":"ClusterId"},
         "SnowballType":{"shape":"SnowballType"},
-        "ForwardingAddressId":{"shape":"AddressId"}
+        "ForwardingAddressId":{"shape":"AddressId"},
+        "TaxDocuments":{"shape":"TaxDocuments"},
+        "DeviceConfiguration":{"shape":"DeviceConfiguration"},
+        "LongTermPricingId":{"shape":"LongTermPricingId"}
       }
     },
     "CreateJobResult":{
       "type":"structure",
       "members":{
         "JobId":{"shape":"JobId"}
+      }
+    },
+    "CreateLongTermPricingRequest":{
+      "type":"structure",
+      "required":["LongTermPricingType"],
+      "members":{
+        "LongTermPricingType":{"shape":"LongTermPricingType"},
+        "IsLongTermPricingAutoRenew":{"shape":"JavaBoolean"},
+        "SnowballType":{"shape":"SnowballType"}
+      }
+    },
+    "CreateLongTermPricingResult":{
+      "type":"structure",
+      "members":{
+        "LongTermPricingId":{"shape":"LongTermPricingId"}
+      }
+    },
+    "CreateReturnShippingLabelRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{"shape":"JobId"},
+        "ShippingOption":{"shape":"ShippingOption"}
+      }
+    },
+    "CreateReturnShippingLabelResult":{
+      "type":"structure",
+      "members":{
+        "Status":{"shape":"ShippingLabelStatus"}
       }
     },
     "DataTransfer":{
@@ -506,6 +642,26 @@
         "SubJobMetadata":{"shape":"JobMetadataList"}
       }
     },
+    "DescribeReturnShippingLabelRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{"shape":"JobId"}
+      }
+    },
+    "DescribeReturnShippingLabelResult":{
+      "type":"structure",
+      "members":{
+        "Status":{"shape":"ShippingLabelStatus"},
+        "ExpirationDate":{"shape":"Timestamp"}
+      }
+    },
+    "DeviceConfiguration":{
+      "type":"structure",
+      "members":{
+        "SnowconeDeviceConfiguration":{"shape":"SnowconeDeviceConfiguration"}
+      }
+    },
     "Ec2AmiResource":{
       "type":"structure",
       "required":["AmiId"],
@@ -534,6 +690,10 @@
     "EventTriggerDefinitionList":{
       "type":"list",
       "member":{"shape":"EventTriggerDefinition"}
+    },
+    "GSTIN":{
+      "type":"string",
+      "pattern":"\\d{2}[A-Z]{5}\\d{4}[A-Z]{1}[A-Z\\d]{1}[Z]{1}[A-Z\\d]{1}"
     },
     "GetJobManifestRequest":{
       "type":"structure",
@@ -573,6 +733,25 @@
         "SnowballsInUse":{"shape":"Integer"}
       }
     },
+    "GetSoftwareUpdatesRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{"shape":"JobId"}
+      }
+    },
+    "GetSoftwareUpdatesResult":{
+      "type":"structure",
+      "members":{
+        "UpdatesURI":{"shape":"String"}
+      }
+    },
+    "INDTaxDocuments":{
+      "type":"structure",
+      "members":{
+        "GSTIN":{"shape":"GSTIN"}
+      }
+    },
     "Integer":{"type":"integer"},
     "InvalidAddressException":{
       "type":"structure",
@@ -610,6 +789,7 @@
       },
       "exception":true
     },
+    "JavaBoolean":{"type":"boolean"},
     "JobId":{
       "type":"string",
       "max":39,
@@ -659,7 +839,10 @@
         "DataTransferProgress":{"shape":"DataTransfer"},
         "JobLogInfo":{"shape":"JobLogs"},
         "ClusterId":{"shape":"String"},
-        "ForwardingAddressId":{"shape":"AddressId"}
+        "ForwardingAddressId":{"shape":"AddressId"},
+        "TaxDocuments":{"shape":"TaxDocuments"},
+        "DeviceConfiguration":{"shape":"DeviceConfiguration"},
+        "LongTermPricingId":{"shape":"LongTermPricingId"}
       }
     },
     "JobMetadataList":{
@@ -683,6 +866,7 @@
         "InTransitToCustomer",
         "WithCustomer",
         "InTransitToAWS",
+        "WithAWSSortingFacility",
         "WithAWS",
         "InProgress",
         "Complete",
@@ -796,7 +980,57 @@
       "max":100,
       "min":0
     },
+    "ListLongTermPricingRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{"shape":"ListLimit"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "ListLongTermPricingResult":{
+      "type":"structure",
+      "members":{
+        "LongTermPricingEntries":{"shape":"LongTermPricingEntryList"},
+        "NextToken":{"shape":"String"}
+      }
+    },
     "Long":{"type":"long"},
+    "LongTermPricingAssociatedJobIdList":{
+      "type":"list",
+      "member":{"shape":"JobId"}
+    },
+    "LongTermPricingEntryList":{
+      "type":"list",
+      "member":{"shape":"LongTermPricingListEntry"}
+    },
+    "LongTermPricingId":{
+      "type":"string",
+      "max":41,
+      "min":41,
+      "pattern":"LTPID[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    },
+    "LongTermPricingListEntry":{
+      "type":"structure",
+      "members":{
+        "LongTermPricingId":{"shape":"LongTermPricingId"},
+        "LongTermPricingEndDate":{"shape":"Timestamp"},
+        "LongTermPricingStartDate":{"shape":"Timestamp"},
+        "LongTermPricingType":{"shape":"LongTermPricingType"},
+        "CurrentActiveJob":{"shape":"JobId"},
+        "ReplacementJob":{"shape":"JobId"},
+        "IsLongTermPricingAutoRenew":{"shape":"JavaBoolean"},
+        "LongTermPricingStatus":{"shape":"String"},
+        "SnowballType":{"shape":"SnowballType"},
+        "JobIds":{"shape":"LongTermPricingAssociatedJobIdList"}
+      }
+    },
+    "LongTermPricingType":{
+      "type":"string",
+      "enum":[
+        "OneYear",
+        "ThreeYear"
+      ]
+    },
     "Notification":{
       "type":"structure",
       "members":{
@@ -807,7 +1041,15 @@
     },
     "ResourceARN":{
       "type":"string",
-      "max":255
+      "max":255,
+      "pattern":"arn:aws.*:*"
+    },
+    "ReturnShippingLabelAlreadyExistsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "exception":true
     },
     "RoleARN":{
       "type":"string",
@@ -832,6 +1074,13 @@
         "TrackingNumber":{"shape":"String"}
       }
     },
+    "ShipmentState":{
+      "type":"string",
+      "enum":[
+        "RECEIVED",
+        "RETURNED"
+      ]
+    },
     "ShippingDetails":{
       "type":"structure",
       "members":{
@@ -839,6 +1088,15 @@
         "InboundShipment":{"shape":"Shipment"},
         "OutboundShipment":{"shape":"Shipment"}
       }
+    },
+    "ShippingLabelStatus":{
+      "type":"string",
+      "enum":[
+        "InProgress",
+        "TimedOut",
+        "Succeeded",
+        "Failed"
+      ]
     },
     "ShippingOption":{
       "type":"string",
@@ -855,6 +1113,10 @@
         "T50",
         "T80",
         "T100",
+        "T42",
+        "T98",
+        "T8",
+        "T14",
         "NoPreference"
       ]
     },
@@ -862,8 +1124,19 @@
       "type":"string",
       "enum":[
         "STANDARD",
-        "EDGE"
+        "EDGE",
+        "EDGE_C",
+        "EDGE_CG",
+        "EDGE_S",
+        "SNC1_HDD",
+        "SNC1_SSD"
       ]
+    },
+    "SnowconeDeviceConfiguration":{
+      "type":"structure",
+      "members":{
+        "WirelessConnection":{"shape":"WirelessConnection"}
+      }
     },
     "SnsTopicARN":{
       "type":"string",
@@ -872,7 +1145,14 @@
     },
     "String":{
       "type":"string",
+      "max":1024,
       "min":1
+    },
+    "TaxDocuments":{
+      "type":"structure",
+      "members":{
+        "IND":{"shape":"INDTaxDocuments"}
+      }
     },
     "Timestamp":{"type":"timestamp"},
     "UnsupportedAddressException":{
@@ -919,6 +1199,42 @@
     "UpdateJobResult":{
       "type":"structure",
       "members":{
+      }
+    },
+    "UpdateJobShipmentStateRequest":{
+      "type":"structure",
+      "required":[
+        "JobId",
+        "ShipmentState"
+      ],
+      "members":{
+        "JobId":{"shape":"JobId"},
+        "ShipmentState":{"shape":"ShipmentState"}
+      }
+    },
+    "UpdateJobShipmentStateResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateLongTermPricingRequest":{
+      "type":"structure",
+      "required":["LongTermPricingId"],
+      "members":{
+        "LongTermPricingId":{"shape":"LongTermPricingId"},
+        "ReplacementJob":{"shape":"JobId"},
+        "IsLongTermPricingAutoRenew":{"shape":"JavaBoolean"}
+      }
+    },
+    "UpdateLongTermPricingResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "WirelessConnection":{
+      "type":"structure",
+      "members":{
+        "IsWifiEnabled":{"shape":"Boolean"}
       }
     }
   }

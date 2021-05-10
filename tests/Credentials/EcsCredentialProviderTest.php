@@ -20,6 +20,7 @@ class EcsCredentialProviderTest extends TestCase
     private function clearEnv()
     {
         putenv(EcsCredentialProvider::ENV_URI . '=');
+        unset($_SERVER[EcsCredentialProvider::ENV_URI]);
     }
 
     public function setUp()
@@ -64,10 +65,10 @@ class EcsCredentialProviderTest extends TestCase
         $c = $this->getTestCreds(
             $this->getCredentialArray('foo', 'baz', null, "@{$t}")
         )->wait();
-        $this->assertEquals('foo', $c->getAccessKeyId());
-        $this->assertEquals('baz', $c->getSecretKey());
+        $this->assertSame('foo', $c->getAccessKeyId());
+        $this->assertSame('baz', $c->getSecretKey());
         $this->assertNull($c->getSecurityToken());
-        $this->assertEquals($t, $c->getExpiration());
+        $this->assertSame($t, $c->getExpiration());
     }
 
     public function testDoesNotRequireConfig()
@@ -113,15 +114,15 @@ class EcsCredentialProviderTest extends TestCase
     {
         $t = (time() + 1000);
         $credentials = $this->getCredentialArray('foo', 'baz', null, "@{$t}");
-        $version = (string) ClientInterface::VERSION;
+        $version = \Aws\guzzle_major_version();
 
-        if ($version[0] === '5') {
+        if ($version === 5) {
             return new \Aws\Handler\GuzzleV5\GuzzleHandler(
                 new Client([
                     'handler' => function (
                         array $request
                     ) use ($credentials) {
-                        $this->assertEquals('', $request['client']['proxy']);
+                        $this->assertSame('', $request['client']['proxy']);
                         return new CompletedFutureArray([
                             'status'  => 200,
                             'headers' => [],
@@ -134,14 +135,14 @@ class EcsCredentialProviderTest extends TestCase
             );
         }
 
-        if ($version[0] === '6') {
+        if ($version === 6 || $version === 7) {
             return new \Aws\Handler\GuzzleV6\GuzzleHandler(
                 new Client([
                     'handler' => function (
                         Psr7\Request $request,
                         array $options
                     ) use ($credentials) {
-                        $this->assertEquals('', $options['proxy']);
+                        $this->assertSame('', $options['proxy']);
                         return Promise\promise_for(
                             new Response(
                                 200,

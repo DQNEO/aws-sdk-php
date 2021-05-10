@@ -40,7 +40,7 @@ class FunctionsTest extends TestCase
         $b = function ($a, $b) { return $a . $b; };
         $c = function ($a, $b) { return 'C'; };
         $comp = Aws\or_chain($a, $b, $c);
-        $this->assertEquals('+-', $comp('+', '-'));
+        $this->assertSame('+-', $comp('+', '-'));
     }
 
     /**
@@ -83,7 +83,13 @@ class FunctionsTest extends TestCase
     {
         $soughtData = ['foo' => 'bar'];
         $jsonPath = sys_get_temp_dir() . '/some-file-name-' . time() . '.json';
+
+        file_put_contents($jsonPath, json_encode($soughtData), LOCK_EX);
+
+        $this->assertSame($soughtData, Aws\load_compiled_json($jsonPath));
+
         file_put_contents($jsonPath, 'INVALID JSON', LOCK_EX);
+
         file_put_contents(
             "$jsonPath.php",
             '<?php return ' . var_export($soughtData, true) . ';',
@@ -91,6 +97,38 @@ class FunctionsTest extends TestCase
         );
 
         $this->assertSame($soughtData, Aws\load_compiled_json($jsonPath));
+    }
+
+    /**
+     * @covers Aws\load_compiled_json()
+     */
+    public function testOnlyLoadsCompiledJsonOnce()
+    {
+        $soughtData = ['foo' => 'bar'];
+        $jsonPath = sys_get_temp_dir() . '/some-file-name-' . time() . '.json';
+
+        file_put_contents($jsonPath, json_encode($soughtData), LOCK_EX);
+
+        $this->assertSame($soughtData, Aws\load_compiled_json($jsonPath));
+        $jsonAtime = fileatime($jsonPath);
+
+        file_put_contents($jsonPath, 'INVALID JSON', LOCK_EX);
+
+        $compiledPath = "{$jsonPath}.php";
+        file_put_contents(
+            $compiledPath,
+            '<?php return ' . var_export($soughtData, true) . ';',
+            LOCK_EX
+        );
+
+        $this->assertSame($soughtData, Aws\load_compiled_json($jsonPath));
+        $compiledAtime = fileatime($compiledPath);
+
+        sleep(1);
+        clearstatcache();
+        $this->assertSame($soughtData, Aws\load_compiled_json($jsonPath));
+        $this->assertEquals($jsonAtime, fileatime($jsonPath));
+        $this->assertEquals($compiledAtime, fileatime($compiledPath));
     }
 
     /**
@@ -144,7 +182,7 @@ class FunctionsTest extends TestCase
     public function testDescribeObject()
     {
         $obj = new \stdClass();
-        $this->assertEquals('object(stdClass)', Aws\describe_type($obj));
+        $this->assertSame('object(stdClass)', Aws\describe_type($obj));
     }
 
     /**
@@ -153,7 +191,7 @@ class FunctionsTest extends TestCase
     public function testDescribeArray()
     {
         $arr = [0, 1, 2];
-        $this->assertEquals('array(3)', Aws\describe_type($arr));
+        $this->assertSame('array(3)', Aws\describe_type($arr));
     }
 
     /**
@@ -162,7 +200,7 @@ class FunctionsTest extends TestCase
     public function testDescribeDoubleToFloat()
     {
         $double = (double)1.3;
-        $this->assertEquals('float(1.3)', Aws\describe_type($double));
+        $this->assertSame('float(1.3)', Aws\describe_type($double));
     }
 
     /**
@@ -170,8 +208,8 @@ class FunctionsTest extends TestCase
      */
     public function testDescribeType()
     {
-        $this->assertEquals('int(1)', Aws\describe_type(1));
-        $this->assertEquals('string(4) "test"', Aws\describe_type("test"));
+        $this->assertSame('int(1)', Aws\describe_type(1));
+        $this->assertSame('string(4) "test"', Aws\describe_type("test"));
     }
 
     /**
@@ -226,13 +264,13 @@ class FunctionsTest extends TestCase
             'Body'   => '123'
         ]);
         $request = \Aws\serialize($command);
-        $this->assertEquals('/bar', $request->getRequestTarget());
-        $this->assertEquals('PUT', $request->getMethod());
-        $this->assertEquals('foo.s3.amazonaws.com', $request->getHeaderLine('Host'));
+        $this->assertSame('/bar', $request->getRequestTarget());
+        $this->assertSame('PUT', $request->getMethod());
+        $this->assertSame('foo.s3.amazonaws.com', $request->getHeaderLine('Host'));
         $this->assertTrue($request->hasHeader('Authorization'));
         $this->assertTrue($request->hasHeader('X-Amz-Content-Sha256'));
         $this->assertTrue($request->hasHeader('X-Amz-Date'));
-        $this->assertEquals('123', (string) $request->getBody());
+        $this->assertSame('123', (string) $request->getBody());
     }
 
     /**
@@ -284,5 +322,152 @@ class FunctionsTest extends TestCase
     public function testInvalidManifest()
     {
         Aws\manifest('notarealservicename');
+    }
+
+    /**
+     * @covers Aws\is_valid_hostname()
+     * @dataProvider getHostnameTestCases
+     */
+    public function testValidatesHostnames($hostname, $expected)
+    {
+        $this->assertEquals($expected, Aws\is_valid_hostname($hostname));
+    }
+
+    public function getHostnameTestCases()
+    {
+        return [
+            ['a', true],
+            ['a.', true],
+            ['0', true],
+            ['1.2.3.4', true],
+            ['a.b', true],
+            ['a.b.c.d.e', true],
+            ['a.b.c.d.e.', true],
+            ['a-b.c-d', true],
+            ['a--b.c--d', true],
+            ['a b', false],
+            ['a..b', false],
+            ['a.b ', false],
+            ['a-.b', false],
+            ['-a.b', false],
+            ['.a.b', false],
+            ['<a', false],
+            ['(a', false],
+            ['a>', false],
+            ['a)', false],
+            ['.', false],
+            [' ', false],
+            ['-', false],
+            ['', false],
+            [str_repeat('a', 63), true],
+            [str_repeat('a', 64), false],
+            [
+                str_repeat('a', 63) . '.' . str_repeat('a', 63) . '.'
+                    . str_repeat('a', 63) . '.' . str_repeat('a', 61),
+                true
+            ],
+            [
+                str_repeat('a', 63) . '.' . str_repeat('a', 63) . '.'
+                    . str_repeat('a', 63) . '.' . str_repeat('a', 62),
+                false
+            ],
+        ];
+    }
+
+    /**
+     * @covers Aws\is_valid_hostlabel()
+     * @dataProvider getHostlabelTestCases
+     * @param string $label
+     * @param bool $expected
+     */
+    public function testValidatesHostlabels($label, $expected)
+    {
+        $this->assertEquals($expected, Aws\is_valid_hostlabel($label));
+    }
+
+    public function getHostlabelTestCases()
+    {
+        return [
+            ['us-west-2', true],
+            ['a', true],
+            ['a.b', false],
+            ['2-us-west', true],
+            ['1-us-west-2', true],
+            ['42', true],
+            ['us_west_2', false],
+            ['-west-2', false],
+            ['@uncoolwebsite.com', false],
+            ['a-b.c-d', false],
+            ['a--b', true],
+            ['a b', false],
+            ['<a', false],
+            ['a>', false],
+            [' ', false],
+            ['-', false],
+            ['', false],
+            [str_repeat('a', 63), true],
+            [str_repeat('a', 64), false],
+            ['us-west-2-certainly-this-label-must-be-longer-than-63-characters-by-now', false],
+        ];
+    }
+
+    /**
+     * @covers Aws\parse_ini_file()
+     * @dataProvider getIniFileTestCases
+     */
+    public function testParsesIniFile($ini, $expected)
+    {
+        $tmpFile = sys_get_temp_dir() . '/test.ini';
+        file_put_contents($tmpFile, $ini);
+        $this->assertEquals(
+            $expected,
+            Aws\parse_ini_file($tmpFile, true, INI_SCANNER_RAW)
+        );
+        unlink($tmpFile);
+    }
+
+    public function getIniFileTestCases()
+    {
+        return [
+            [
+                <<<EOT
+[default]
+foo_key = bar
+baz_key = qux
+[custom]
+foo_key = bar-custom
+baz_key = qux-custom
+EOT
+                ,
+                [
+                    'default' => [
+                        'foo_key' => 'bar',
+                        'baz_key' => 'qux',
+                    ],
+                    'custom' => [
+                        'foo_key' => 'bar-custom',
+                        'baz_key' => 'qux-custom',
+                    ]
+                ]
+            ],
+            [
+                <<<EOT
+[default]
+;Full-line comment = ignored
+#Full-line comment = ignored
+foo_key = bar;Inline comment = ignored
+baz_key = qux
+*star_key = not_ignored
+EOT
+                ,
+                [
+                    'default' => [
+                        'foo_key' => 'bar',
+                        'baz_key' => 'qux',
+                        '*star_key' => 'not_ignored'
+                    ],
+                ],
+            ],
+        ];
     }
 }

@@ -11,6 +11,45 @@
     "uid":"kinesis-video-archived-media-2017-09-30"
   },
   "operations":{
+    "GetClip":{
+      "name":"GetClip",
+      "http":{
+        "method":"POST",
+        "requestUri":"/getClip"
+      },
+      "input":{"shape":"GetClipInput"},
+      "output":{"shape":"GetClipOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidArgumentException"},
+        {"shape":"ClientLimitExceededException"},
+        {"shape":"NotAuthorizedException"},
+        {"shape":"UnsupportedStreamMediaTypeException"},
+        {"shape":"MissingCodecPrivateDataException"},
+        {"shape":"InvalidCodecPrivateDataException"},
+        {"shape":"InvalidMediaFrameException"},
+        {"shape":"NoDataRetentionException"}
+      ]
+    },
+    "GetDASHStreamingSessionURL":{
+      "name":"GetDASHStreamingSessionURL",
+      "http":{
+        "method":"POST",
+        "requestUri":"/getDASHStreamingSessionURL"
+      },
+      "input":{"shape":"GetDASHStreamingSessionURLInput"},
+      "output":{"shape":"GetDASHStreamingSessionURLOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidArgumentException"},
+        {"shape":"ClientLimitExceededException"},
+        {"shape":"NotAuthorizedException"},
+        {"shape":"UnsupportedStreamMediaTypeException"},
+        {"shape":"NoDataRetentionException"},
+        {"shape":"MissingCodecPrivateDataException"},
+        {"shape":"InvalidCodecPrivateDataException"}
+      ]
+    },
     "GetHLSStreamingSessionURL":{
       "name":"GetHLSStreamingSessionURL",
       "http":{
@@ -70,18 +109,96 @@
       "error":{"httpStatusCode":400},
       "exception":true
     },
+    "ClipFragmentSelector":{
+      "type":"structure",
+      "required":[
+        "FragmentSelectorType",
+        "TimestampRange"
+      ],
+      "members":{
+        "FragmentSelectorType":{"shape":"ClipFragmentSelectorType"},
+        "TimestampRange":{"shape":"ClipTimestampRange"}
+      }
+    },
+    "ClipFragmentSelectorType":{
+      "type":"string",
+      "enum":[
+        "PRODUCER_TIMESTAMP",
+        "SERVER_TIMESTAMP"
+      ]
+    },
+    "ClipTimestampRange":{
+      "type":"structure",
+      "required":[
+        "StartTimestamp",
+        "EndTimestamp"
+      ],
+      "members":{
+        "StartTimestamp":{"shape":"Timestamp"},
+        "EndTimestamp":{"shape":"Timestamp"}
+      }
+    },
+    "ContainerFormat":{
+      "type":"string",
+      "enum":[
+        "FRAGMENTED_MP4",
+        "MPEG_TS"
+      ]
+    },
     "ContentType":{
       "type":"string",
       "max":128,
       "min":1,
       "pattern":"^[a-zA-Z0-9_\\.\\-]+$"
     },
-    "DiscontinuityMode":{
+    "DASHDisplayFragmentNumber":{
       "type":"string",
       "enum":[
         "ALWAYS",
         "NEVER"
       ]
+    },
+    "DASHDisplayFragmentTimestamp":{
+      "type":"string",
+      "enum":[
+        "ALWAYS",
+        "NEVER"
+      ]
+    },
+    "DASHFragmentSelector":{
+      "type":"structure",
+      "members":{
+        "FragmentSelectorType":{"shape":"DASHFragmentSelectorType"},
+        "TimestampRange":{"shape":"DASHTimestampRange"}
+      }
+    },
+    "DASHFragmentSelectorType":{
+      "type":"string",
+      "enum":[
+        "PRODUCER_TIMESTAMP",
+        "SERVER_TIMESTAMP"
+      ]
+    },
+    "DASHMaxResults":{
+      "type":"long",
+      "max":5000,
+      "min":1
+    },
+    "DASHPlaybackMode":{
+      "type":"string",
+      "enum":[
+        "LIVE",
+        "LIVE_REPLAY",
+        "ON_DEMAND"
+      ]
+    },
+    "DASHStreamingSessionURL":{"type":"string"},
+    "DASHTimestampRange":{
+      "type":"structure",
+      "members":{
+        "StartTimestamp":{"shape":"Timestamp"},
+        "EndTimestamp":{"shape":"Timestamp"}
+      }
     },
     "ErrorMessage":{"type":"string"},
     "Expires":{
@@ -92,7 +209,7 @@
     "Fragment":{
       "type":"structure",
       "members":{
-        "FragmentNumber":{"shape":"String"},
+        "FragmentNumber":{"shape":"FragmentNumberString"},
         "FragmentSizeInBytes":{"shape":"Long"},
         "ProducerTimestamp":{"shape":"Timestamp"},
         "ServerTimestamp":{"shape":"Timestamp"},
@@ -133,16 +250,58 @@
         "SERVER_TIMESTAMP"
       ]
     },
+    "GetClipInput":{
+      "type":"structure",
+      "required":["ClipFragmentSelector"],
+      "members":{
+        "StreamName":{"shape":"StreamName"},
+        "StreamARN":{"shape":"ResourceARN"},
+        "ClipFragmentSelector":{"shape":"ClipFragmentSelector"}
+      }
+    },
+    "GetClipOutput":{
+      "type":"structure",
+      "members":{
+        "ContentType":{
+          "shape":"ContentType",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "Payload":{"shape":"Payload"}
+      },
+      "payload":"Payload"
+    },
+    "GetDASHStreamingSessionURLInput":{
+      "type":"structure",
+      "members":{
+        "StreamName":{"shape":"StreamName"},
+        "StreamARN":{"shape":"ResourceARN"},
+        "PlaybackMode":{"shape":"DASHPlaybackMode"},
+        "DisplayFragmentTimestamp":{"shape":"DASHDisplayFragmentTimestamp"},
+        "DisplayFragmentNumber":{"shape":"DASHDisplayFragmentNumber"},
+        "DASHFragmentSelector":{"shape":"DASHFragmentSelector"},
+        "Expires":{"shape":"Expires"},
+        "MaxManifestFragmentResults":{"shape":"DASHMaxResults"}
+      }
+    },
+    "GetDASHStreamingSessionURLOutput":{
+      "type":"structure",
+      "members":{
+        "DASHStreamingSessionURL":{"shape":"DASHStreamingSessionURL"}
+      }
+    },
     "GetHLSStreamingSessionURLInput":{
       "type":"structure",
       "members":{
         "StreamName":{"shape":"StreamName"},
         "StreamARN":{"shape":"ResourceARN"},
-        "PlaybackMode":{"shape":"PlaybackMode"},
+        "PlaybackMode":{"shape":"HLSPlaybackMode"},
         "HLSFragmentSelector":{"shape":"HLSFragmentSelector"},
-        "DiscontinuityMode":{"shape":"DiscontinuityMode"},
+        "ContainerFormat":{"shape":"ContainerFormat"},
+        "DiscontinuityMode":{"shape":"HLSDiscontinuityMode"},
+        "DisplayFragmentTimestamp":{"shape":"HLSDisplayFragmentTimestamp"},
         "Expires":{"shape":"Expires"},
-        "MaxMediaPlaylistFragmentResults":{"shape":"PageLimit"}
+        "MaxMediaPlaylistFragmentResults":{"shape":"HLSMaxResults"}
       }
     },
     "GetHLSStreamingSessionURLOutput":{
@@ -153,12 +312,10 @@
     },
     "GetMediaForFragmentListInput":{
       "type":"structure",
-      "required":[
-        "StreamName",
-        "Fragments"
-      ],
+      "required":["Fragments"],
       "members":{
         "StreamName":{"shape":"StreamName"},
+        "StreamARN":{"shape":"ResourceARN"},
         "Fragments":{"shape":"FragmentNumberList"}
       }
     },
@@ -174,6 +331,21 @@
       },
       "payload":"Payload"
     },
+    "HLSDiscontinuityMode":{
+      "type":"string",
+      "enum":[
+        "ALWAYS",
+        "NEVER",
+        "ON_DISCONTINUITY"
+      ]
+    },
+    "HLSDisplayFragmentTimestamp":{
+      "type":"string",
+      "enum":[
+        "ALWAYS",
+        "NEVER"
+      ]
+    },
     "HLSFragmentSelector":{
       "type":"structure",
       "members":{
@@ -186,6 +358,19 @@
       "enum":[
         "PRODUCER_TIMESTAMP",
         "SERVER_TIMESTAMP"
+      ]
+    },
+    "HLSMaxResults":{
+      "type":"long",
+      "max":5000,
+      "min":1
+    },
+    "HLSPlaybackMode":{
+      "type":"string",
+      "enum":[
+        "LIVE",
+        "LIVE_REPLAY",
+        "ON_DEMAND"
       ]
     },
     "HLSStreamingSessionURL":{"type":"string"},
@@ -212,21 +397,34 @@
       "error":{"httpStatusCode":400},
       "exception":true
     },
+    "InvalidMediaFrameException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
     "ListFragmentsInput":{
       "type":"structure",
-      "required":["StreamName"],
       "members":{
         "StreamName":{"shape":"StreamName"},
-        "MaxResults":{"shape":"PageLimit"},
-        "NextToken":{"shape":"String"},
+        "StreamARN":{"shape":"ResourceARN"},
+        "MaxResults":{"shape":"ListFragmentsMaxResults"},
+        "NextToken":{"shape":"NextToken"},
         "FragmentSelector":{"shape":"FragmentSelector"}
       }
+    },
+    "ListFragmentsMaxResults":{
+      "type":"long",
+      "max":1000,
+      "min":1
     },
     "ListFragmentsOutput":{
       "type":"structure",
       "members":{
         "Fragments":{"shape":"FragmentList"},
-        "NextToken":{"shape":"String"}
+        "NextToken":{"shape":"NextToken"}
       }
     },
     "Long":{"type":"long"},
@@ -237,6 +435,12 @@
       },
       "error":{"httpStatusCode":400},
       "exception":true
+    },
+    "NextToken":{
+      "type":"string",
+      "max":4096,
+      "min":1,
+      "pattern":"[a-zA-Z0-9+/]+={0,2}"
     },
     "NoDataRetentionException":{
       "type":"structure",
@@ -254,27 +458,15 @@
       "error":{"httpStatusCode":401},
       "exception":true
     },
-    "PageLimit":{
-      "type":"long",
-      "max":1000,
-      "min":1
-    },
     "Payload":{
       "type":"blob",
       "streaming":true
-    },
-    "PlaybackMode":{
-      "type":"string",
-      "enum":[
-        "LIVE",
-        "ON_DEMAND"
-      ]
     },
     "ResourceARN":{
       "type":"string",
       "max":1024,
       "min":1,
-      "pattern":"arn:aws:kinesisvideo:[a-z0-9-]+:[0-9]+:[a-z]+/[a-zA-Z0-9_.-]+/[0-9]+"
+      "pattern":"arn:[a-z\\d-]+:kinesisvideo:[a-z0-9-]+:[0-9]+:[a-z]+/[a-zA-Z0-9_.-]+/[0-9]+"
     },
     "ResourceNotFoundException":{
       "type":"structure",
@@ -289,10 +481,6 @@
       "max":256,
       "min":1,
       "pattern":"[a-zA-Z0-9_.-]+"
-    },
-    "String":{
-      "type":"string",
-      "min":1
     },
     "Timestamp":{"type":"timestamp"},
     "TimestampRange":{

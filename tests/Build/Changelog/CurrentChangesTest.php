@@ -48,16 +48,21 @@ class CurrentChangesTest extends TestCase
                 $this->fail('More than one item in changelog document.');
             }
 
-            foreach (['type', 'category', 'description'] as $key) {
+            foreach (['type', 'description'] as $key) {
                 if (empty($data[0][$key])) {
                     $this->fail('Missing required key `' . $key . '` in `'
                         . $name . '` changelog document.');
                 }
             }
 
+            if (!isset($data[0]['category'])) {
+                $this->fail('Missing required key `cetegory` in `'
+                    . $name . '` changelog document.');
+            }
+
             if (!in_array(
                 $data[0]['type'],
-                ['feature', 'api-change', 'enhancement', 'bugfix']
+                ['feature', 'api-change', 'enhancement', 'bugfix', 'documentation']
             )) {
                 $this->fail('Invalid `type` provided in `'
                         . $name . '` changelog document.');

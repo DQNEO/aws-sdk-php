@@ -2,6 +2,7 @@
 namespace Aws\Test\S3;
 
 use Aws\CommandInterface;
+use Aws\Middleware;
 use Aws\Result;
 use Aws\S3\S3Client;
 use Aws\S3\Transfer;
@@ -9,6 +10,7 @@ use Aws\Test\UsesServiceTrait;
 use GuzzleHttp\Promise;
 use Psr\Http\Message\RequestInterface;
 use PHPUnit\Framework\TestCase;
+use SplFileInfo;
 
 /**
  * @covers Aws\S3\Transfer
@@ -99,7 +101,7 @@ class TransferTest extends TestCase
         );
 
         $c = [];
-        $i = \Aws\recursive_dir_iterator(__DIR__);
+        $i = \Aws\recursive_dir_iterator(__DIR__ . '/Crypto');
         $t = new Transfer($s3, $i, 's3://foo/bar', [
             'before' => function ($command) use (&$c) {
                 $c[] = $command;
@@ -118,8 +120,8 @@ class TransferTest extends TestCase
 
         /** @var CommandInterface $test */
         foreach ($c as $test) {
-            $this->assertEquals('PutObject', $test->getName());
-            $this->assertEquals('foo', $test['Bucket']);
+            $this->assertSame('PutObject', $test->getName());
+            $this->assertSame('foo', $test['Bucket']);
             $this->assertStringStartsWith('bar/', $test['Key']);
             $this->assertContains($test['SourceFile'] . ' -> s3://foo/bar', $output);
         }
@@ -139,6 +141,40 @@ class TransferTest extends TestCase
         `rm -rf $dir`;
         mkdir($dir);
         $filename = $dir . '/large.txt';
+        $f = fopen($filename, 'w+');
+        $line = str_repeat('.', 1024);
+        for ($i = 0; $i < 6000; $i++) {
+            fwrite($f, $line);
+        }
+        fclose($f);
+
+        $res = fopen('php://temp', 'r+');
+        $t = new Transfer($s3, $dir, 's3://foo/bar', [
+            'mup_threshold' => 5248000,
+            'debug' => $res
+        ]);
+
+        $t->transfer();
+        rewind($res);
+        $output = stream_get_contents($res);
+        $this->assertContains("Transferring $filename -> s3://foo/bar/large.txt (UploadPart) : Part=1", $output);
+        `rm -rf $dir`;
+    }
+
+    public function testDoesMultipartForLargeFilesWithFileInfoAsSource()
+    {
+        $s3 = $this->getTestClient('s3');
+        $this->addMockResults($s3, [
+            new Result(['UploadId' => '123']),
+            new Result(['ETag' => 'a']),
+            new Result(['ETag' => 'b']),
+            new Result(['UploadId' => '123']),
+        ]);
+
+        $dir = sys_get_temp_dir() . '/unittest';
+        `rm -rf $dir`;
+        mkdir($dir);
+        $filename = new SplFileInfo($dir . '/large.txt');
         $f = fopen($filename, 'w+');
         $line = str_repeat('.', 1024);
         for ($i = 0; $i < 6000; $i++) {
@@ -189,6 +225,73 @@ class TransferTest extends TestCase
         $this->assertContains('s3://foo/bar/../bar/a/b -> ', $output);
         $this->assertContains('s3://foo/bar/c//d -> ', $output);
         $this->assertContains('s3://foo/../bar//c/../a/b/.. -> ', $output);
+        `rm -rf $dir`;
+    }
+
+    public function testDebugFalse()
+    {
+        $s3 = $this->getTestClient('s3');
+        $this->addMockResults($s3, [
+            new Result(['UploadId' => '123']),
+            new Result(['ETag' => 'a']),
+            new Result(['ETag' => 'b']),
+            new Result(['UploadId' => '123']),
+        ]);
+
+        $dir = sys_get_temp_dir() . '/unittest';
+        `rm -rf $dir`;
+        mkdir($dir);
+        $filename = $dir . '/large.txt';
+        $f = fopen($filename, 'w+');
+        fwrite($f, '...');
+        fclose($f);
+
+        $t = new Transfer($s3, $dir, 's3://foo/bar', [
+            'debug' => false
+        ]);
+
+        $this->assertNull($t->transfer());
+    }
+
+    public function testDownloadsObjectsWithAccessPointArn()
+    {
+        $s3 = $this->getTestClient('s3');
+        $s3->getHandlerList()->appendSign(Middleware::tap(
+            function (CommandInterface $cmd, RequestInterface $req) {
+                $this->assertSame(
+                    'myaccess-123456789012.s3-accesspoint.us-east-1.amazonaws.com',
+                    $req->getUri()->getHost()
+                );
+            }
+        ));
+
+        $lso = [
+            'IsTruncated' => false,
+            'Contents' => [
+                ['Key' => 'bar/f/'],
+                ['Key' => 'bar/../bar/a/b'],
+                ['Key' => 'bar/c//d'],
+                ['Key' => '../bar//c/../a/b/..'],
+            ]
+        ];
+        $this->addMockResults($s3, [
+            new Result($lso),
+            new Result(['Body' => 'test']),
+            new Result(['Body' => '123']),
+            new Result(['Body' => 'abc']),
+        ]);
+
+        $dir = sys_get_temp_dir() . '/unittest';
+        `rm -rf $dir`;
+        mkdir($dir);
+        $res = fopen('php://temp', 'r+');
+        $t = new Transfer($s3, 's3://arn:aws:s3:us-east-1:123456789012:accesspoint:myaccess/test_key', $dir, ['debug' => $res]);
+        $t->transfer();
+        rewind($res);
+        $output = stream_get_contents($res);
+        $this->assertContains('s3://arn:aws:s3:us-east-1:123456789012:accesspoint:myaccess/bar/../bar/a/b -> ', $output);
+        $this->assertContains('s3://arn:aws:s3:us-east-1:123456789012:accesspoint:myaccess/bar/c//d -> ', $output);
+        $this->assertContains('s3://arn:aws:s3:us-east-1:123456789012:accesspoint:myaccess/../bar//c/../a/b/.. -> ', $output);
         `rm -rf $dir`;
     }
 
@@ -245,7 +348,7 @@ class TransferTest extends TestCase
             ->method('getCommand')
             ->with(
                 'PutObject',
-                new \PHPUnit_Framework_Constraint_Callback(function (array $args) use ($filesInDirectory) {
+                new \PHPUnit\Framework\Constraint\Callback(function (array $args) use ($filesInDirectory) {
                     return 'bare-bucket' === $args['Bucket']
                         && in_array($args['SourceFile'], $filesInDirectory)
                         && __DIR__ . '/' . $args['Key'] === $args['SourceFile'];
@@ -269,7 +372,7 @@ class TransferTest extends TestCase
             ->method('getCommand')
             ->with(
                 'PutObject',
-                new \PHPUnit_Framework_Constraint_Callback(function (array $args) {
+                new \PHPUnit\Framework\Constraint\Callback(function (array $args) {
                     return 'bucket' === $args['Bucket']
                     && $args['SourceFile'] === __FILE__
                     && __DIR__ . '/' . $args['Key'] === $args['SourceFile'];
@@ -293,7 +396,7 @@ class TransferTest extends TestCase
             ->method('getCommand')
             ->with(
                 'GetObject',
-                new \PHPUnit_Framework_Constraint_Callback(function (array $args) {
+                new \PHPUnit\Framework\Constraint\Callback(function (array $args) {
                     return 'bucket' === $args['Bucket']
                     && $args['Key'] === 'path/to/key';
                 })

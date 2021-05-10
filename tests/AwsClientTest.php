@@ -1,6 +1,7 @@
 <?php
 namespace Aws\Test;
 
+use Aws\Api\ApiProvider;
 use Aws\Api\ErrorParser\JsonRpcErrorParser;
 use Aws\AwsClient;
 use Aws\CommandInterface;
@@ -55,7 +56,7 @@ class AwsClientTest extends TestCase
         $this->assertSame($config['handler'], $this->readAttribute($client->getHandlerList(), 'handler'));
         $this->assertSame($config['credentials'], $client->getCredentials()->wait());
         $this->assertSame($config['region'], $client->getRegion());
-        $this->assertEquals('foo', $client->getApi()->getEndpointPrefix());
+        $this->assertSame('foo', $client->getApi()->getEndpointPrefix());
     }
 
     /**
@@ -137,24 +138,26 @@ class AwsClientTest extends TestCase
 
     public function testCanGetIterator()
     {
-        $client = $this->getTestClient('s3');
+        $provider = ApiProvider::filesystem(__DIR__ . '/fixtures/aws_client_test');
+        $client = $this->getTestClient('ec2', ['api_provider' => $provider]);
         $this->assertInstanceOf(
             'Generator',
-            $client->getIterator('ListObjects', ['Bucket' => 'foobar'])
+            $client->getIterator('DescribePaginatedExamples')
         );
     }
 
-    public function testCanGetIteratorWithoutDefinedPaginator()
+    public function testCanGetIteratorWithoutFullyDefinedPaginator()
     {
-        $client = $this->getTestClient('ec2');
+        $provider = ApiProvider::filesystem(__DIR__ . '/fixtures/aws_client_test');
+        $client = $this->getTestClient('ec2', ['api_provider' => $provider]);
         $data = ['foo', 'bar', 'baz'];
         $this->addMockResults($client, [new Result([
-            'Subnets' => [$data],
+            'Examples' => [$data, $data],
         ])]);
-        $iterator = $client->getIterator('DescribeSubnets');
+        $iterator = $client->getIterator('DescribeExamples');
         $this->assertInstanceOf('Traversable', $iterator);
         foreach ($iterator as $iterated) {
-            $this->assertSame($data, $iterated);
+            $this->assertSame($iterated, $data);
         }
     }
 
@@ -235,15 +238,15 @@ class AwsClientTest extends TestCase
             'version' => 'latest'
         ]);
         $this->assertInstanceOf('Aws\Sts\StsClient', $client);
-        $this->assertEquals('us-west-2', $client->getRegion());
+        $this->assertSame('us-west-2', $client->getRegion());
     }
 
     public function testCanGetEndpoint()
     {
         $client = $this->createClient();
-        $this->assertEquals(
+        $this->assertSame(
             'http://us-east-1.foo.amazonaws.com',
-            $client->getEndpoint()
+            (string)$client->getEndpoint()
         );
     }
 
@@ -363,12 +366,113 @@ class AwsClientTest extends TestCase
                     foreach (['Authorization','X-Amz-Content-Sha256', 'X-Amz-Date'] as $signatureHeader) {
                         $this->assertTrue($request->hasHeader($signatureHeader));
                     }
-                    $this->assertEquals('UNSIGNED-PAYLOAD', $request->getHeader('X-Amz-Content-Sha256')[0]);
+                    $this->assertSame('UNSIGNED-PAYLOAD', $request->getHeader('X-Amz-Content-Sha256')[0]);
                     return new Result;
                 }
             ]
         );
         $client->bar();
+    }
+
+    public function testUsesCommandContextSigningRegionAndService()
+    {
+        $client = $this->createHttpsEndpointClient(
+            [
+                'metadata' => [
+                    'signatureVersion' => 'v4',
+                ],
+                'operations' => [
+                    'Bar' => [
+                        'http' => ['method' => 'POST'],
+                        'authtype' => 'v4-unsigned-body',
+                    ],
+                ],
+            ],
+            [
+                'handler' => function (
+                    CommandInterface $command,
+                    RequestInterface $request
+                ) {
+                    $this->assertContains('ap-southeast-1/custom-service', $request->getHeader('Authorization')[0]);
+                    return new Result;
+                }
+            ]
+        );
+        $list = $client->getHandlerList();
+        $list->appendBuild(function ($handler) {
+            return function (CommandInterface $cmd, RequestInterface $req)
+                use ($handler)
+            {
+                $cmd['@context']['signing_region'] = 'ap-southeast-1';
+                $cmd['@context']['signing_service'] = 'custom-service';
+                return $handler($cmd, $req);
+            };
+        });
+        $client->bar();
+    }
+
+    public function testLoadsAliases()
+    {
+        $client = $this->createClient([
+            'metadata' => [
+                'serviceId' => 'TestService',
+                'apiVersion' => '2019-05-23'
+            ]
+        ]);
+        $ref = new \ReflectionClass(AwsClient::class);
+        $method = $ref->getMethod('loadAliases');
+        $method->setAccessible(true);
+        $property = $ref->getProperty('aliases');
+        $property->setAccessible(true);
+        $method->invokeArgs(
+            $client,
+            [__DIR__ . '/fixtures/aws_client_test/aliases.json']
+        );
+        $this->assertEquals(
+            ['GetConfigAlias' => 'GetConfig'],
+            $property->getValue($client)
+        );
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Operation not found: GetConfig
+     */
+    public function testCallsAliasedFunction()
+    {
+        $client = $this->createClient([
+            'metadata' => [
+                'serviceId' => 'TestService',
+                'apiVersion' => '2019-05-23'
+            ]
+        ]);
+        $ref = new \ReflectionClass(AwsClient::class);
+        $method = $ref->getMethod('loadAliases');
+        $method->setAccessible(true);
+        $method->invokeArgs(
+            $client,
+            [__DIR__ . '/fixtures/aws_client_test/aliases.json']
+        );
+
+        $client->getConfigAlias();
+    }
+
+    public function testVerifyGetConfig()
+    {
+        $client = $this->createClient([
+            'metadata' => [
+                'serviceId' => 'TestService',
+                'apiVersion' => '2019-05-23'
+            ]
+        ]);
+        $this->assertEquals(
+            [
+                'signature_version' => 'v4',
+                'signing_name' => 'foo',
+                'signing_region' => 'foo',
+            ],
+            $client->getConfig()
+        );
     }
 
     private function createHttpsEndpointClient(array $service = [], array $config = [])

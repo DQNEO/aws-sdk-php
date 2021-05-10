@@ -1,5 +1,5 @@
 <?php
-namespace Aws\Test;
+namespace Aws\Test\Endpoint;
 
 use Aws\Endpoint\Partition;
 use Aws\Endpoint\PartitionInterface;
@@ -18,7 +18,7 @@ class PartitionTest extends TestCase
     public function testAcceptsValidDefinitions(array $definition)
     {
         $this->assertInstanceOf(
-            PartitionInterface::class, 
+            PartitionInterface::class,
             new Partition($definition)
         );
     }
@@ -41,11 +41,15 @@ class PartitionTest extends TestCase
      *
      * @param array $definition
      */
-    public function testReportsName(array $definition)
+    public function testReportsData(array $definition)
     {
         $this->assertSame(
             $definition['partition'],
             (new Partition($definition))->getName()
+        );
+        $this->assertSame(
+            $definition['dnsSuffix'],
+            (new Partition($definition))->getDnsSuffix()
         );
     }
 
@@ -461,7 +465,190 @@ class PartitionTest extends TestCase
             // no overrides
             [$partition, 'puff', 'quux', 'quux'],
             // unknown service
-            [$partition, 'us-east-1', 's3', 's3'],
+            [$partition, 'us-east-2', 's3', 's3'],
+        ];
+    }
+
+    /**
+     * @dataProvider stsEndpointTestCases
+     *
+     * @param $region
+     * @param $configOption
+     * @param $expectedEndpoint
+     */
+    public function testResolvesStsRegionalEndpoints(
+        $region,
+        $configOption,
+        $expectedEndpoint
+    ) {
+        $data = json_decode(
+            file_get_contents(__DIR__ . '/fixtures/sts_regional_endpoints.json'),
+            true
+        );
+        $partition = new Partition($data['partitions'][0]);
+
+        $params = [
+            'service' => 'sts',
+            'region' => $region
+        ];
+        if (!empty($configOption)) {
+            $params['options'] = [
+                'sts_regional_endpoints' => $configOption
+            ];
+        }
+
+        $data = $partition($params);
+        $this->assertEquals($expectedEndpoint, $data['endpoint']);
+
+    }
+
+    public function stsEndpointTestCases()
+    {
+        return [
+            [
+                'us-west-2',
+                'legacy',
+                'https://sts.amazonaws.com'
+            ],
+            [
+                'us-west-2',
+                'regional',
+                'https://sts.us-west-2.amazonaws.com'
+            ],
+            [
+                'us-west-2',
+                null,
+                'https://sts.amazonaws.com'
+            ],
+            [
+                'us-west-2-fips',
+                'legacy',
+                'https://sts-fips.us-west-2.amazonaws.com'
+            ],
+            [
+                'us-west-2-fips',
+                'regional',
+                'https://sts-fips.us-west-2.amazonaws.com'
+            ],
+            [
+                'us-west-2-fips',
+                null,
+                'https://sts-fips.us-west-2.amazonaws.com'
+            ],
+            [
+                'ap-east-1',
+                'legacy',
+                'https://sts.ap-east-1.amazonaws.com'
+            ],
+            [
+                'ap-east-1',
+                'regional',
+                'https://sts.ap-east-1.amazonaws.com'
+            ],
+            [
+                'ap-east-1',
+                null,
+                'https://sts.ap-east-1.amazonaws.com'
+            ],
+            [
+                'aws-global',
+                'legacy',
+                'https://sts.amazonaws.com'
+            ],
+            [
+                'aws-global',
+                'regional',
+                'https://sts.amazonaws.com'
+            ],
+            [
+                'aws-global',
+                null,
+                'https://sts.amazonaws.com'
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider s3EndpointTestCases
+     *
+     * @param $region
+     * @param $configOption
+     * @param $expectedEndpoint
+     */
+    public function testResolvesS3RegionalEndpoint(
+        $region,
+        $configOption,
+        $expectedEndpoint
+    ) {
+        $data = json_decode(
+            file_get_contents(__DIR__ . '/fixtures/s3_us_east_1_regional_endpoint.json'),
+            true
+        );
+        $partition = new Partition($data['partitions'][0]);
+
+        $params = [
+            'service' => 's3',
+            'region' => $region
+        ];
+        if (!empty($configOption)) {
+            $params['options'] = [
+                's3_us_east_1_regional_endpoint' => $configOption
+            ];
+        }
+
+        $data = $partition($params);
+        $this->assertEquals($expectedEndpoint, $data['endpoint']);
+
+    }
+
+    public function s3EndpointTestCases()
+    {
+        return [
+            [
+                'us-west-2',
+                'legacy',
+                'https://s3.us-west-2.amazonaws.com'
+            ],
+            [
+                'us-west-2',
+                'regional',
+                'https://s3.us-west-2.amazonaws.com'
+            ],
+            [
+                'us-west-2',
+                null,
+                'https://s3.us-west-2.amazonaws.com'
+            ],
+            [
+                'us-east-1',
+                'legacy',
+                'https://s3.amazonaws.com'
+            ],
+            [
+                'us-east-1',
+                'regional',
+                'https://s3.us-east-1.amazonaws.com'
+            ],
+            [
+                'us-east-1',
+                null,
+                'https://s3.amazonaws.com'
+            ],
+            [
+                'aws-global',
+                'legacy',
+                'https://s3.amazonaws.com'
+            ],
+            [
+                'aws-global',
+                'regional',
+                'https://s3.amazonaws.com'
+            ],
+            [
+                'aws-global',
+                null,
+                'https://s3.amazonaws.com'
+            ],
         ];
     }
 }

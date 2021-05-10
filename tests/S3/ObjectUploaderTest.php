@@ -1,11 +1,14 @@
 <?php
 namespace Aws\Test\S3;
 
+use Aws\CommandInterface;
+use Aws\Middleware;
 use Aws\Result;
 use Aws\S3\ObjectUploader;
 use Aws\Test\UsesServiceTrait;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\FnStream;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -28,7 +31,7 @@ class ObjectUploaderTest extends TestCase
         $this->addMockResults($client, $mockedResults);
         $result = (new ObjectUploader($client, 'bucket', 'key', $body, 'private', $options))
             ->upload();
-        $this->assertEquals('https://bucket.s3.amazonaws.com/key', $result['ObjectURL']);
+        $this->assertSame('https://bucket.s3.amazonaws.com/key', $result['ObjectURL']);
         $this->assertTrue($this->mockQueueEmpty());
     }
 
@@ -47,7 +50,43 @@ class ObjectUploaderTest extends TestCase
         $this->addMockResults($client, $mockedResults);
         $result = (new ObjectUploader($client, 'bucket', 'key', $body, 'private', $options))
             ->upload();
-        $this->assertEquals('https://s3.amazonaws.com/bucket/key', $result['ObjectURL']);
+        $this->assertSame('https://s3.amazonaws.com/bucket/key', $result['ObjectURL']);
+        $this->assertTrue($this->mockQueueEmpty());
+    }
+
+    /**
+     * @dataProvider getUploadTestCases
+     */
+    public function testDoesCorrectOperationWithAccessPointArn(
+        StreamInterface $body,
+        array $mockedResults,
+        array $options
+    ) {
+        /** @var \Aws\S3\S3Client $client */
+        $client = $this->getTestClient('S3', [
+            'region' => 'us-west-2'
+        ]);
+        $client->getHandlerList()->appendSign(Middleware::tap(
+            function(CommandInterface $cmd, RequestInterface $req) {
+                $this->assertSame(
+                    'mydest-123456789012.s3-accesspoint.us-west-2.amazonaws.com',
+                    $req->getUri()->getHost()
+                );
+                $this->assertSame(
+                    '/key',
+                    $req->getUri()->getPath()
+                );
+            }
+        ));
+        $this->addMockResults($client, $mockedResults);
+        $result = (new ObjectUploader(
+                $client,
+                'arn:aws:s3:us-west-2:123456789012:accesspoint:mydest',
+                'key',
+                $body,
+                'private',
+                $options
+            ))->upload();
         $this->assertTrue($this->mockQueueEmpty());
     }
 
@@ -66,7 +105,7 @@ class ObjectUploaderTest extends TestCase
             ->promise();
         $this->assertFalse($this->mockQueueEmpty());
         $result = $promise->wait();
-        $this->assertEquals('https://bucket.s3.amazonaws.com/key', $result['ObjectURL']);
+        $this->assertSame('https://bucket.s3.amazonaws.com/key', $result['ObjectURL']);
     }
 
     /**
@@ -86,7 +125,7 @@ class ObjectUploaderTest extends TestCase
             ->promise();
         $this->assertFalse($this->mockQueueEmpty());
         $result = $promise->wait();
-        $this->assertEquals('https://s3.amazonaws.com/bucket/key', $result['ObjectURL']);
+        $this->assertSame('https://s3.amazonaws.com/bucket/key', $result['ObjectURL']);
     }
 
     public function getUploadTestCases()
@@ -202,7 +241,7 @@ class ObjectUploaderTest extends TestCase
         $uploadOptions = [
             'params'          => ['RequestPayer' => 'test'],
             'before_upload'   => function($command) {
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             },
         ];
         $url = 'https://foo.s3.amazonaws.com/bar';
@@ -226,7 +265,7 @@ class ObjectUploaderTest extends TestCase
             $uploadOptions);
         $result = $uploader->upload();
 
-        $this->assertEquals($url, $result['ObjectURL']);
+        $this->assertSame($url, $result['ObjectURL']);
     }
 
     public function testS3ObjectUploaderMultipartParams()
@@ -237,13 +276,13 @@ class ObjectUploaderTest extends TestCase
             'mup_threshold'   => self::MB * 4,
             'params'          => ['RequestPayer' => 'test'],
             'before_initiate' => function($command) {
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             },
             'before_upload'   => function($command) {
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             },
             'before_complete' => function($command) {
-                $this->assertEquals('test', $command['RequestPayer']);
+                $this->assertSame('test', $command['RequestPayer']);
             }
         ];
         $url = 'https://foo.s3.amazonaws.com/bar';
@@ -267,6 +306,6 @@ class ObjectUploaderTest extends TestCase
             $uploadOptions);
         $result = $uploader->upload();
 
-        $this->assertEquals($url, $result['ObjectURL']);
+        $this->assertSame($url, $result['ObjectURL']);
     }
 }

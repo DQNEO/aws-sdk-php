@@ -27,8 +27,8 @@ class SignatureV4Test extends TestCase
     public function testReturnsRegionAndService()
     {
         $s = new SignatureV4('foo', 'bar');
-        $this->assertEquals('foo', $this->readAttribute($s, 'service'));
-        $this->assertEquals('bar', $this->readAttribute($s, 'region'));
+        $this->assertSame('foo', $this->readAttribute($s, 'service'));
+        $this->assertSame('bar', $this->readAttribute($s, 'region'));
     }
 
     public function testAddsSecurityTokenIfPresent()
@@ -37,7 +37,7 @@ class SignatureV4Test extends TestCase
         $c = new Credentials('a', 'b', 'AddMe!');
         $r = new Request('GET', 'http://httpbin.org');
         $signed = $s->signRequest($r, $c);
-        $this->assertEquals('AddMe!', $signed->getHeaderLine('X-Amz-Security-Token'));
+        $this->assertSame('AddMe!', $signed->getHeaderLine('X-Amz-Security-Token'));
     }
 
     public function testSignsRequestsWithMultiValuedHeaders()
@@ -50,8 +50,8 @@ class SignatureV4Test extends TestCase
         $methB = new \ReflectionMethod($s, 'createContext');
         $methB->setAccessible(true);
         $result = $methB->invoke($s, $reqArray, '123');
-        $this->assertEquals('host;x-amz-foo', $result['headers']);
-        $this->assertEquals("GET\n/\n\nhost:httpbin.org\nx-amz-foo:bar,baz\n\nhost;x-amz-foo\n123", $result['creq']);
+        $this->assertSame('host;x-amz-foo', $result['headers']);
+        $this->assertSame("GET\n/\n\nhost:httpbin.org\nx-amz-foo:bar,baz\n\nhost;x-amz-foo\n123", $result['creq']);
     }
 
     public function testUsesExistingSha256HashIfPresent()
@@ -156,7 +156,9 @@ class SignatureV4Test extends TestCase
         $_SERVER['override_v4_time'] = true;
         list($request, $credentials, $signature) = $this->getFixtures();
         $credentials = new Credentials('foo', 'bar', '123');
-        $url = (string) $signature->presign($request, $credentials, 1386720000)->getUri();
+        $request = $signature->presign($request, $credentials, 1386720000);
+        $this->assertEmpty($request->getHeader('X-Amz-Security-Token'));
+        $url = (string) $request->getUri();
         $this->assertContains('X-Amz-Security-Token=123', $url);
         $this->assertContains('X-Amz-Expires=518400', $url);
     }
@@ -248,8 +250,8 @@ class SignatureV4Test extends TestCase
             'foo=bar&baz=bam'
         );
         $request = SignatureV4::convertPostToGet($request);
-        $this->assertEquals('GET', $request->getMethod());
-        $this->assertEquals('foo=bar&baz=bam', $request->getUri()->getQuery());
+        $this->assertSame('GET', $request->getMethod());
+        $this->assertSame('foo=bar&baz=bam', $request->getUri()->getQuery());
     }
 
     /**
@@ -273,6 +275,37 @@ class SignatureV4Test extends TestCase
         ]);
         $signed = $sig->signRequest($req, $creds);
         $this->assertContains('content-md5;host;x-amz-date;x-amz-foo', $signed->getHeaderLine('Authorization'));
+    }
+
+    public function testPresignSpecificHeaders()
+    {
+        $sig = new SignatureV4('foo', 'bar');
+        $creds = new Credentials('a', 'b');
+        $req = new Request('PUT', 'http://foo.com', [
+            'x-amz-date' => 'today',
+            'host' => 'foo.com',
+            'x-amz-foo' => '123',
+            'content-md5' => 'bogus',
+            'x-amz-meta-foo' => 'bar',
+            'x-amz-content-sha256' => 'abc',
+        ]);
+        $presigned = $sig->presign($req, $creds, '+5 minutes');
+        $this->assertContains(urlencode('host;x-amz-foo;content-md5;x-amz-meta-foo'), (string)$presigned->getUri());
+    }
+
+    public function testPresignBlacklistedHeaders()
+    {
+        $sig = new SignatureV4('foo', 'bar');
+        $creds = new Credentials('a', 'b');
+        $req = new Request('PUT', 'http://foo.com', [
+            'user-agent' => 'curl',
+            'content-length' => '1000',
+            'Content-Type' => 'text/html',
+        ]);
+        $presigned = $sig->presign($req, $creds, '+5 minutes');
+        $this->assertNotContains('user-agent', (string)$presigned->getUri());
+        $this->assertNotContains('content-length', (string)$presigned->getUri());
+        $this->assertNotContains('Content-Type', (string)$presigned->getUri());
     }
 
     /**
@@ -371,7 +404,7 @@ class SignatureV4Test extends TestCase
         $payloadFn = new \ReflectionMethod($signature, 'getPayload');
         $payloadFn->setAccessible(true);
         $payload = $payloadFn->invoke($signature, $request);
-        $this->assertEquals('UNSIGNED-PAYLOAD',$payload);
+        $this->assertSame('UNSIGNED-PAYLOAD',$payload);
         $ctx = $contextFn->invoke($signature, $parsed, $payload);
         $this->assertEquals($creq, $ctx['creq']);
         $this->assertSame($sreq, Psr7\str($signature->signRequest($request, $credentials)));

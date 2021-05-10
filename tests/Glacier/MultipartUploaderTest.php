@@ -41,14 +41,18 @@ class MultipartUploaderTest extends TestCase
         ]);
 
         if ($error) {
-            $this->setExpectedException($error);
+            if (method_exists($this, 'expectException')) {
+                $this->expectException($error);
+            } else {
+                $this->setExpectedException($error);
+            }
         }
 
         $uploader = new MultipartUploader($client, $source, $uploadOptions);
         $result = $uploader->upload();
 
         $this->assertTrue($uploader->getState()->isCompleted());
-        $this->assertEquals('buzz', $result['fizz']);
+        $this->assertSame('buzz', $result['fizz']);
     }
 
     public function getTestCases()
@@ -112,12 +116,12 @@ class MultipartUploaderTest extends TestCase
         $uploader = new MultipartUploader($client, $source, ['state' => $state]);
 
         $parts = $state->getUploadedParts();
-        $this->assertEquals(1048576, $parts[2]['size']);
-        $this->assertEquals($hashA, $parts[1]['checksum']);
-        $this->assertEquals($hashB, $parts[2]['checksum']);
+        $this->assertSame(1048576, $parts[2]['size']);
+        $this->assertSame($hashA, $parts[1]['checksum']);
+        $this->assertSame($hashB, $parts[2]['checksum']);
 
         $result = $uploader->upload();
         $this->assertTrue($state->isCompleted());
-        $this->assertEquals('buzz', $result['fizz']);
+        $this->assertSame('buzz', $result['fizz']);
     }
 }

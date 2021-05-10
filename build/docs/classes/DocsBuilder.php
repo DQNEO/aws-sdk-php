@@ -114,6 +114,12 @@ class DocsBuilder
                     continue;
                 }
                 $examples = $this->loadExamples($name, $version);
+                if (method_exists("Aws\\{$ns}\\{$ns}Client", 'addDocExamples')) {
+                    $examples = call_user_func(
+                        "Aws\\{$ns}\\{$ns}Client::addDocExamples",
+                        $examples
+                    );
+                }
                 $this->renderService($service, $examples);
                 $services[$title][$version] = $service;
             }
@@ -126,6 +132,7 @@ class DocsBuilder
         });
         $this->updateHomepage($services);
         $this->updateClients($services);
+        $this->updateExceptions($services);
         $this->updateAliases($services, $aliases);
         $this->updateSitemap();
         $this->updateSearch($services);
@@ -400,6 +407,45 @@ EOT;
             }
             $html .= '</ul></div>';
             $this->replaceInner($service->clientLink, $html, '<!-- api -->');
+        }
+    }
+
+    private function updateExceptions(array $services)
+    {
+        fwrite(STDOUT, "Updating exception pages with modeled exception data...\n");
+
+        foreach ($services as $versions) {
+            krsort($versions);
+            $service = reset($versions);
+            $shapes = $service->api->getErrorShapes();
+            if (count($shapes) > 0) {
+                $html = new HtmlDocument;
+                $html->section(2, 'Expected Exception Codes');
+                $desc = <<<EOT
+The following are the known exception codes and corresponding data shapes that 
+this service may return as part of an error response. 
+EOT;
+                $html->elem('div', null, $desc);
+                foreach ($shapes as $shape) {
+                    if ($shape['type'] == 'structure'
+                        && !isset($this->skipMembers[$shape])
+                    ) {
+                        $html->section(3, $shape->getName(), 'shape', 'method-title');
+
+                        // Add error syntax
+                        $outputShapes = new ShapeIterator($shape, $service->docs);
+                        $outputExample = new ExampleBuilder($shape->getName(), false);
+                        foreach ($outputShapes as $outputShape) {
+                            $outputExample->addShape($outputShape);
+                        }
+                        $html->elem('pre', null, htmlentities($outputExample->getCode()));
+
+                        // Add member details
+                        $html->append($this->renderShape($service->docs, $shape));
+                    }
+                }
+                $this->replaceInner($service->exceptionLink, $html->render(), '<!-- modeled_exceptions -->');
+            }
         }
     }
 
@@ -718,13 +764,32 @@ EOT;
             $html->elem('div', 'alert alert-info', 'The results for this operation are always empty.');
         } else {
             $outputShapes = new ShapeIterator($output, $service->docs);
+            $eventStreamExample = null;
+            foreach ($outputShapes as $shape) {
+                if (!empty($shape['eventstream'])) {
+                    $eventStreamExample = new EventStreamExampleBuilder($shape['param']);
+                }
+            }
             $outputExample = new ExampleBuilder($name, false);
             foreach ($outputShapes as $shape) {
                 $outputExample->addShape($shape);
+                if ($eventStreamExample) {
+                    $eventStreamExample->addShape($shape);
+                }
             }
             $html->elem('pre', null, htmlentities($outputExample->getCode()))
                 ->elem('h4', null, 'Result Details')
                 ->append($this->renderShape($service->docs, $output, false));
+            if ($eventStreamExample) {
+                $desc = <<<EOT
+To use an EventParsingIterator, you will need to loop over the events it will
+generate and check the top-level field to determine which type of event it is.
+EOT;
+
+                $html->elem('h5', null, 'Using an EventParsingIterator')
+                    ->elem('p', null, $desc)
+                    ->elem('pre', null, htmlentities($eventStreamExample->getCode()));
+            }
         }
 
         // Errors
@@ -739,7 +804,16 @@ EOT;
                     ?: 'This error does not currently have a description.';
                 $html
                     ->open('li')
-                        ->elem('p', null, $error['name'] . ': ' . $desc)
+                        ->open('p')
+                            ->elem(
+                                'a',
+                                [
+                                    'href' => $service->exceptionLink . '#shape-'
+                                        . strtolower($error->getName())
+                                ],
+                                $error['name'] . ': ')
+                            ->elem('p', null, $desc)
+                        ->close()
                     ->close();
             }
             $html->close();
@@ -842,9 +916,11 @@ EOT;
             $html->elem('span', 'term', $name);
             $html->close();
             $html->open('dd', 'param-def');
-                $html->append($this->describeParam($member));
-                $desc = $docs->getShapeDocs($member['name'], $shape['name'], $name);
-                $html->elem('div', 'param-def-doc', $desc);
+            $required = !empty($shape['required'])
+                && in_array($name, $shape['required']);
+            $html->append($this->describeParam($member, $required));
+            $desc = $docs->getShapeDocs($member['name'], $shape['name'], $name);
+            $html->elem('div', 'param-def-doc', $desc);
             $html->close();
         }
 
@@ -854,7 +930,7 @@ EOT;
         return $html;
     }
 
-    private function describeParam(AbstractModel $member)
+    private function describeParam(AbstractModel $member, $required = false)
     {
         $html = new HtmlDocument();
         if ($member instanceof StructureShape) {
@@ -870,7 +946,7 @@ EOT;
         }
 
         $html->open('div', 'param-attributes')->open('ul');
-        if ($member['required']) {
+        if ($required) {
             $html->elem('li', 'required', 'Required: Yes');
         }
         $html->elem('li', '', 'Type: ' . $typeDesc);
@@ -883,6 +959,9 @@ EOT;
     private function getMemberText(AbstractModel $member)
     {
         if ($member instanceof StructureShape) {
+            if (!empty($member['eventstream'])) {
+                return $this->getEventStreamMemberText($member);
+            }
             return $this->memberLink($member->getName()) . ' structure';
         } elseif ($member instanceof ListShape) {
             switch ($member->getMember()['type']) {
@@ -903,6 +982,24 @@ EOT;
         }
 
         return $this->getPrimitivePhpType($member);
+    }
+
+    private function getEventStreamMemberText(StructureShape $member)
+    {
+        return 'EventParsingIterator supplying the following structures: '
+            . implode(', ',
+                array_map(
+                    [$this, 'memberLink'],
+                    array_reduce(
+                        $member->getMembers(),
+                        function ($carry, $item) {
+                            $carry []= $item['name'];
+                            return $carry;
+                        },
+                        []
+                    )
+                )
+            );
     }
 
     private function getPrimitivePhpType($member)

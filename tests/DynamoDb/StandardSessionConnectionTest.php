@@ -15,6 +15,54 @@ class StandardSessionConnectionTest extends TestCase
 {
     use UsesServiceTrait;
 
+    public function testStandardConfig()
+    {
+        $client = $this->getTestSdk()->createDynamoDb();
+        $scc = new StandardSessionConnection($client);
+        $this->assertSame('sessions', $scc->getTableName());
+        $this->assertSame('id', $scc->getHashKey());
+        $this->assertSame('data', $scc->getDataAttribute());
+        $this->assertSame('string', $scc->getDataAttributeType());
+        $this->assertSame((int) ini_get('session.gc_maxlifetime'), $scc->getSessionLifetime());
+        $this->assertSame('expires', $scc->getSessionLifetimeAttribute());
+        $this->assertTrue($scc->isConsistentRead());
+        $this->assertFalse($scc->isLocking());
+        $this->assertSame(10, $scc->getMaxLockWaitTime());
+        $this->assertSame(10000, $scc->getMinLockRetryMicrotime());
+        $this->assertSame(50000, $scc->getMaxLockRetryMicrotime());
+    }
+
+    public function testCustomConfig()
+    {
+        $client = $this->getTestSdk()->createDynamoDb();
+        $config = [
+            'table_name'                    => 'sessions_custom',
+            'hash_key'                      => 'id_custom',
+            'data_attribute'                => 'data_custom',
+            'data_attribute_type'           => 'binary',
+            'session_lifetime'              => 2019,
+            'session_lifetime_attribute'    => 'expires_custom',
+            'consistent_read'               => false,
+            'batch_config'                  => ['hello' => 'hello'],
+            'locking'                       => true,
+            'max_lock_wait_time'            => 2019,
+            'min_lock_retry_microtime'      => 2019,
+            'max_lock_retry_microtime'      => 2019
+        ];
+        $scc = new StandardSessionConnection($client, $config);
+        $this->assertSame('sessions_custom', $scc->getTableName());
+        $this->assertSame('id_custom', $scc->getHashKey());
+        $this->assertSame('data_custom', $scc->getDataAttribute());
+        $this->assertSame('binary', $scc->getDataAttributeType());
+        $this->assertSame(2019, $scc->getSessionLifetime());
+        $this->assertSame('expires_custom', $scc->getSessionLifetimeAttribute());
+        $this->assertFalse($scc->isConsistentRead());
+        $this->assertTrue($scc->isLocking());
+        $this->assertSame(2019, $scc->getMaxLockWaitTime());
+        $this->assertSame(2019, $scc->getMinLockRetryMicrotime());
+        $this->assertSame(2019, $scc->getMaxLockRetryMicrotime());
+    }
+
     public function testReadRetrievesItemData()
     {
         $client = $this->getTestSdk()->createDynamoDb();
@@ -22,21 +70,24 @@ class StandardSessionConnectionTest extends TestCase
             new Result(['Item' => [
                 'sessionid' => ['S' => 'session1'],
                 'otherkey'  => ['S' => 'foo'],
+                'binarykey' => ['B' => 'bar']
             ]]),
         ]);
+        
         $client->getHandlerList()->appendBuild(Middleware::tap(function ($command) {
             $this->assertEquals(
                 ['sessionid' => ['S' => 'session1']],
                 $command['Key']
             );
         }));
+        
         $connection = new StandardSessionConnection($client, [
             'hash_key' => 'sessionid',
         ]);
         $data = $connection->read('session1');
 
         $this->assertEquals(
-            ['sessionid' => 'session1', 'otherkey' => 'foo'],
+            ['sessionid' => 'session1', 'otherkey' => 'foo', 'binarykey' => 'bar'],
             $data
         );
     }
@@ -62,8 +113,25 @@ class StandardSessionConnectionTest extends TestCase
             $this->assertArrayHasKey('expires', $updates);
             $this->assertArrayHasKey('lock', $updates);
             $this->assertArrayHasKey('data', $updates);
+            $this->assertArrayHasKey('S', $updates['data']['Value']);
         }));
         $connection = new StandardSessionConnection($client);
+        $return = $connection->write('s1', serialize(['foo' => 'bar']), true);
+        $this->assertTrue($return);
+    }
+
+    public function testWriteUpdatesItemDataAsBinary()
+    {
+        $client = $this->getTestSdk()->createDynamoDb();
+        $this->addMockResults($client, [new Result([])]);
+        $client->getHandlerList()->appendBuild(Middleware::tap(function ($command) {
+            $updates = $command['AttributeUpdates'];
+            $this->assertArrayHasKey('data', $updates);
+            $this->assertArrayHasKey('B', $updates['data']['Value']);
+        }));
+        $connection = new StandardSessionConnection($client, [
+            'data_attribute_type' => 'binary',
+        ]);
         $return = $connection->write('s1', serialize(['foo' => 'bar']), true);
         $this->assertTrue($return);
     }
@@ -87,7 +155,7 @@ class StandardSessionConnectionTest extends TestCase
     }
 
     /**
-     * @expectedException \PHPUnit_Framework_Error_Warning
+     * @expectedException \PHPUnit\Framework\Error\Warning
      */
     public function testWriteTriggersWarningOnFailure()
     {
@@ -123,7 +191,7 @@ class StandardSessionConnectionTest extends TestCase
     }
 
     /**
-     * @expectedException \PHPUnit_Framework_Error_Warning
+     * @expectedException \PHPUnit\Framework\Error\Warning
      */
     public function testDeleteTriggersWarningOnFailure()
     {
